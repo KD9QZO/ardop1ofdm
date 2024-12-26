@@ -1,0 +1,22 @@
+
+#ifndef VERSION_H_
+#define VERSION_H_
+
+
+const char ProductName[] = "ARDOP TNC";
+
+#if !defined(VERSION_FROM_BUILD_SYSTEM)
+const char ProductVersion[] = "1.0.4.1s-OFDMBPQ";
+#else
+const char ProductVersion[] = "@VER_MAJOR@.@VER_MINOR@.@VER_PATCH@.@VER_SUBPATCH@-@VER_SUFFIX@";
+#endif
+
+// 4.1s (Sept 2021)
+//		Add GUI Support
+//		Improve GUI Support
+//		Add L/R soundcard and LOGDIR Options
+//		Add EXTRADELAY parameter
+//		Add CM108 PTT 
+
+
+#endif	/* !VERSION_H_ */
