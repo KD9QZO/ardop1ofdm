@@ -24,7 +24,7 @@ void Flush();
 
 
 void GetTwoToneLeaderWithSync(int intSymLen) {
-	// Generate a 50 baud (20 ms symbol time) 2 tone leader 
+	// Generate a 50 baud (20 ms symbol time) 2 tone leader
 	// leader tones used are 1475 and 1525 Hz.
 	int intSign = 1;
 	int i, j;
@@ -98,7 +98,7 @@ void Mod4FSKDataAndPlay(unsigned char *bytEncodedBytes, int Len, int intLeaderLe
 	// Function to Modulate data encoded for 4FSK, create
 	// the 16 bit samples and send to sound interface
 
-	// Function works for 1, 2 or 4 simultaneous carriers 
+	// Function works for 1, 2 or 4 simultaneous carriers
 
 	int intNumCar, intBaud, intDataLen, intRSLen, intDataPtr, intSampPerSym, intDataBytesPerCar;
 	BOOL blnOdd;
@@ -452,7 +452,7 @@ void Mod16FSKDataAndPlay(int Type, unsigned char *bytEncodedBytes, int Len, int 
 
 	intDataPtr = 2;
 
-	for (m = 0; m < intDataBytesPerCar; m++)  // For each byte of input data 
+	for (m = 0; m < intDataBytesPerCar; m++)  // For each byte of input data
 	{
 		bytMask = 0xF0;     // Initialize mask each new data byte
 		for (k = 0; k < 2; k++)    // for 2 symbol values per byte of data
@@ -475,7 +475,7 @@ void Mod16FSKDataAndPlay(int Type, unsigned char *bytEncodedBytes, int Len, int 
 	Flush();
 }
 
-//	Function to Modulate data encoded for 4FSK High baud rate and create the integer array of 32 bit samples suitable for playing 
+//	Function to Modulate data encoded for 4FSK High baud rate and create the integer array of 32 bit samples suitable for playing
 
 
 
@@ -483,7 +483,7 @@ void Mod4FSK600BdDataAndPlay(int Type, unsigned char *bytEncodedBytes, int Len, 
 	// Function to Modulate data encoded for 4FSK, create
 	// the 16 bit samples and send to sound interface
 
-	// Function works for 1, 2 or 4 simultaneous carriers 
+	// Function works for 1, 2 or 4 simultaneous carriers
 
 	int intNumCar, intBaud, intDataLen, intRSLen, intDataPtr, intSampPerSym, intDataBytesPerCar;
 	BOOL blnOdd;
@@ -562,7 +562,7 @@ UCHAR GetSym8PSK(int intDataPtr, int k, int intCar, UCHAR *bytEncodedBytes, int 
 }
 
 
-// Function to soft clip combined waveforms. 
+// Function to soft clip combined waveforms.
 int SoftClip(int intInput) {
 	if (intInput > 30000) // soft clip above/below 30000
 	{
@@ -595,7 +595,7 @@ void ModPSKDataAndPlay(int Type, unsigned char *bytEncodedBytes, int Len, int in
 	int intPeakAmp;
 	int intCarIndex;
 
-	UCHAR bytLastSym[MAXCAR]; // = {0}; // Holds the last symbol sent (per carrier). bytLastSym(4) is 1500 Hz carrier (only used on 1 carrier modes) 
+	UCHAR bytLastSym[MAXCAR]; // = {0}; // Holds the last symbol sent (per carrier). bytLastSym(4) is 1500 Hz carrier (only used on 1 carrier modes)
 
 	if (!FrameInfo(Type, &blnOdd, &intNumCar, strMod, &intBaud, &intDataLen, &intRSLen, &bytMinQualThresh, strType))
 		return;
@@ -603,7 +603,7 @@ void ModPSKDataAndPlay(int Type, unsigned char *bytEncodedBytes, int Len, int in
 	intDataBytesPerCar = (Len - 2) / intNumCar;        // We queue the samples here, so dont copy below
 
 	switch (intNumCar) {
-		// These new scaling factor combined with soft clipping to provide near optimum scaling Jan 6, 2018 
+		// These new scaling factor combined with soft clipping to provide near optimum scaling Jan 6, 2018
 		// The Test form was changed to calculate the Peak power to RMS power (PAPR) of the test waveform and count the number of "soft clips" out of ~ 50,000 samples.
 		// These values arrived at emperically using the Test form (Quick brown fox message) to minimize PAPR at a minor decrease in maximum constellation quality
 
@@ -704,9 +704,9 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 	// Now create a reference symbol for each carrier
 
 	//	We have to do each carrier for each sample, as we write
-	//	the sample immediately 
+	//	the sample immediately
 
-	for (n = 0; n < intSampPerSym; n++)  // Sum for all the samples of a symbols 
+	for (n = 0; n < intSampPerSym; n++)  // Sum for all the samples of a symbols
 	{
 		intSample = 0;
 		intCarIndex = intCarStartIndex;  // initialize to correct starting carrier
@@ -720,7 +720,7 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 			if (intBaud == 100)
 				intSample += intPSK100bdCarTemplate[intCarIndex][0][n];  // double the symbol value during template lookup for 4PSK. (skips over odd PSK 8 symbols)
 			else
-				intSample += intPSK200bdCarTemplate[intCarIndex][0][n]; // subtract 2 from the symbol value before doubling and subtract value of table 
+				intSample += intPSK200bdCarTemplate[intCarIndex][0][n]; // subtract 2 from the symbol value before doubling and subtract value of table
 
 			intCarIndex += 1;
 			if (intCarIndex == 4)
@@ -731,16 +731,16 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 		SampleSink(intSample);
 	}
 
-	// End of reference phase generation 
+	// End of reference phase generation
 
 	if (strcmp(strMod, "4PSK") == 0) {
-		for (m = 0; m < intDataBytesPerCar; m++)  // For each byte of input data (all carriers) 
+		for (m = 0; m < intDataBytesPerCar; m++)  // For each byte of input data (all carriers)
 		{
 			bytMask = 0xC0; // Initialize mask each new data byte
 
 			for (k = 0; k < 4; k++)  // for 4 symbol values per byte of data
 			{
-				for (n = 0; n < intSampPerSym; n++)  // Sum for all the samples of a symbols 
+				for (n = 0; n < intSampPerSym; n++)  // Sum for all the samples of a symbols
 				{
 					intSample = 0;
 					intCarIndex = intCarStartIndex; // initialize the carrrier index
@@ -790,7 +790,7 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 			intDataPtr += 1;
 		}
 	} else if (strcmp(strMod, "8PSK") == 0) {
-		// More complex ...must go through data in 3 byte chunks creating 8 Three bit symbols for each 3 bytes of data. 
+		// More complex ...must go through data in 3 byte chunks creating 8 Three bit symbols for each 3 bytes of data.
 
 		for (m = 0; m < intDataBytesPerCar / 3; m++) {
 			for (k = 0; k < 8; k++) // for 8 symbols in 24 bits of int3Bytes
@@ -847,13 +847,13 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 			intDataPtr += 3;
 		}
 	} else if (strcmp(strMod, "16QAM") == 0) {
-		for (m = 0; m < intDataBytesPerCar; m++)  // For each byte of input data (all carriers) 
+		for (m = 0; m < intDataBytesPerCar; m++)  // For each byte of input data (all carriers)
 		{
 			bytMask = 0xF0; // Initialize mask each new data byte
 
 			for (k = 0; k < 2; k++)  // for 2 symbol values per byte of data
 			{
-				for (n = 0; n < intSampPerSym; n++)  // Sum for all the samples of a symbols 
+				for (n = 0; n < intSampPerSym; n++)  // Sum for all the samples of a symbols
 				{
 					intSample = 0;
 					intCarIndex = intCarStartIndex; // initialize the carrrier index
@@ -890,8 +890,7 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 							intCarIndex += 1;  // skip over 1500 Hz for multi carrier modes (multi carrier modes all use even hundred Hz tones)
 					}
 
-					intSample = intSample *
-								dblCarScalingFactor; // on the last carrier rescale value based on # of carriers to bound output
+					intSample = intSample * dblCarScalingFactor; // on the last carrier rescale value based on # of carriers to bound output
 
 					//				if (intSample > 32700)
 					//					intSample = 32700;
@@ -900,7 +899,6 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 					//				  	intSample = -32700;
 
 					intSample = SoftClip(intSample);
-
 					SampleSink(intSample);
 				}
 				bytMask = bytMask >> 4;
@@ -910,7 +908,6 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 	}
 	if (Type == PktFrameHeader) {
 		// just sent packet header. Send rest in current mode
-
 		Type = 0;            // Prevent reentry
 
 		strcpy(strMod, &pktMod[pktMode][0]);
@@ -949,12 +946,10 @@ PktLoopBack:        // Reenter here to send rest of variable length packet frame
 	Flush();
 	if (intSoftClipCnt > 0)
 		WriteDebugLog(LOGDEBUG, "Soft Clips %d ", intSoftClipCnt);
-
 }
 
 
 // Subroutine to add trailer before filtering
-
 void AddTrailer() {
 	int intAddedSymbols = 1 + TrailerLength / 10; // add 1 symbol + 1 per each 10 ms of MCB.Trailer
 	int i, k;
@@ -967,7 +962,6 @@ void AddTrailer() {
 }
 
 //	Resends the last frame
-
 void RemodulateLastFrame() {
 	int intNumCar, intBaud, intDataLen, intRSLen;
 	UCHAR bytMinQualThresh;
@@ -985,34 +979,33 @@ void RemodulateLastFrame() {
 			Mod4FSK600BdDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen,
 									intCalcLeader);  // Modulate Data frame
 		else
-			Mod4FSKDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+			Mod4FSKDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 
 		return;
 	}
 	if (strcmp(strMod, "16FSK") == 0) {
-		Mod16FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+		Mod16FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		return;
 	}
 	if (strcmp(strMod, "8FSK") == 0) {
-		Mod8FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+		Mod8FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		return;
 	}
 	if (strcmp(strMod, "OFDM") == 0) {
 		int save = OFDMMode;
+
 		OFDMMode = LastSentOFDMMode;
-
-		ModOFDMDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
-
+		ModOFDMDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		OFDMMode = save;
 
 		return;
 	}
 
-	ModPSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+	ModPSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 }
 
-// Filter State Variables
 
+// Filter State Variables
 static float dblR = (float) 0.9995f;    // insures stability (must be < 1.0) (Value .9995 7/8/2013 gives good results)
 static int intN = 120;                //Length of filter 12000/100
 static float dblRn;
@@ -1021,8 +1014,8 @@ static float dblR2;
 static float dblCoef[34] = {0.0f};            // the coefficients
 float dblZin = 0, dblZin_1 = 0, dblZin_2 = 0, dblZComb = 0;  // Used in the comb generator
 
-// The resonators 
 
+// The resonators
 float dblZout_0[34] = {0.0f};    // resonator outputs
 float dblZout_1[34] = {0.0f};    // resonator outputs delayed one sample
 float dblZout_2[34] = {0.0f};    // resonator outputs delayed two samples
@@ -1051,10 +1044,11 @@ unsigned short *SendtoCard(unsigned short *buf, int n);
 
 unsigned short *SoundInit();
 
-// initFilter is called to set up each packet. It selects filter width
 
+// initFilter is called to set up each packet. It selects filter width
 void initFilter(int Width, int Centre) {
 	int i, j;
+
 	fWidth = Width;
 	centreSlot = Centre / 100;
 	largest = smallest = 0;
@@ -1079,46 +1073,35 @@ void initFilter(int Width, int Centre) {
 
 	switch (fWidth) {
 		case 200:
-
 			// implements 3 100 Hz wide sections centered on 1500 Hz  (~200 Hz wide @ - 30dB centered on 1500 Hz)
-
 			first = centreSlot - 1;
 			last = centreSlot + 1;        // 3 filter sections
 			break;
 
 		case 500:
-
 			// implements 7 100 Hz wide sections centered on 1500 Hz  (~500 Hz wide @ - 30dB centered on 1500 Hz)
-
 			first = centreSlot - 3;
 			last = centreSlot + 3;        // 7 filter sections
-//		first = 12;
-//		last = 18;		// 7 filter sections
+//			first = 12;
+//			last = 18;		// 7 filter sections
 			break;
 
 		case 1000:
-
 			// implements 11 100 Hz wide sections centered on 1500 Hz  (~1000 Hz wide @ - 30dB centered on 1500 Hz)
-
 			first = centreSlot - 5;
 			last = centreSlot + 5;        // 11 filter sections
-//		first = 10;
-//		last = 20;		// 7 filter sections
+//			first = 10;
+//			last = 20;		// 7 filter sections
 			break;
 
 		case 2000:
-
-
 			// implements 21 100 Hz wide sections centered on 1500 Hz  (~2000 Hz wide @ - 30dB centered on 1500 Hz)
-
 			first = centreSlot - 10;
 			last = centreSlot + 10;        // 21 filter sections
 			break;
 
 		case 2500:
-
 			// implements 26 100 Hz wide sections centered on 1500 Hz  (~2000 Hz wide @ - 30dB centered on 1500 Hz)
-
 			intN = 120;
 			first = centreSlot - 13;
 			last = centreSlot + 13;        // 27 filter sections
@@ -1132,7 +1115,6 @@ void initFilter(int Width, int Centre) {
 	}
 
 	// Initialise the coefficients
-
 	if (dblCoef[last] == 0.0) {
 		for (i = first; i <= last; i++) {
 			dblCoef[i] = 2 * dblR * cosf(2 * M_PI * i / intN); // For Frequency = bin i
@@ -1412,5 +1394,3 @@ void sendCWID(char *strID, BOOL blnPlay) {
 
 	SoundFlush();
 }
-
-

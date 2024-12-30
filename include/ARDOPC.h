@@ -3,6 +3,7 @@
 #ifndef ARDOPCHEADERDEFINED
 #define ARDOPCHEADERDEFINED
 
+
 extern const char ProductName[];
 extern const char ProductVersion[];
 
@@ -10,25 +11,24 @@ extern const char ProductVersion[];
 #ifdef CONST
 #undef CONST
 #endif
-#define CONST const    // for building sample arrays
+#define CONST const						// for building sample arrays
 
 //#define USE_SOUNDMODEM
 
-//	Sound interface buffer size
+// Sound interface buffer size
+#define SendSize			(1200)		// 100 mS for now
+#define ReceiveSize			(240)		// try 50mS 100 mS for now
+#define NumberofinBuffers	(4)
 
-#define SendSize 1200        // 100 mS for now
-#define ReceiveSize 240        // try 50mS 100 mS for now
-#define NumberofinBuffers 4
+#define MAXCAR (43)						// Max OFDM Carriers
 
-#define MAXCAR 43            // Max OFDM Carriers
+#define DATABUFFERSIZE (11000)
 
-#define DATABUFFERSIZE 11000
-
-#ifndef _WIN32_WINNT        // Allow use of features specific to Windows XP or later.
-#define _WIN32_WINNT 0x0501    // Change this to the appropriate value to target other versions of Windows.
+#ifndef _WIN32_WINNT					// Allow use of features specific to Windows XP or later.
+#define _WIN32_WINNT 0x0501				// Change this to the appropriate value to target other versions of Windows.
 #endif
 
-#define WIN32_LEAN_AND_MEAN        // Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN				// Exclude rarely-used stuff from Windows headers
 #define _CRT_SECURE_NO_DEPRECATE
 #define _USE_32BIT_TIME_T
 
@@ -48,21 +48,22 @@ void txSleep(int mS);
 
 unsigned int getTicks();
 
+
 #define Now getTicks()
 
-// DebugLog Severity Levels 
 
-#define LOGEMERGENCY 0
-#define LOGALERT 1
-#define LOGCRIT 2
-#define LOGERROR 3
-#define LOGWARNING 4
-#define LOGNOTICE 5
-#define LOGINFO 6
-#define LOGDEBUG 7
+// DebugLog Severity Levels
+#define LOGEMERGENCY	0
+#define LOGALERT		1
+#define LOGCRIT			2
+#define LOGERROR		3
+#define LOGWARNING		4
+#define LOGNOTICE		5
+#define LOGINFO			6
+#define LOGDEBUG		7
+
 
 #include <time.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,7 +75,7 @@ unsigned int getTicks();
 #undef M_PI
 #endif
 
-#define M_PI       3.1415926f
+#define M_PI 3.1415926f
 
 #ifndef TEENSY
 #ifndef WIN32
@@ -88,44 +89,43 @@ unsigned int getTicks();
 #endif
 #endif
 
-#define UseGUI            // Enable GUI Front End Support
+#define UseGUI		// Enable GUI Front End Support
 
 #ifndef TEENSY
 #ifdef UseGUI
 
 // Constellation and Waterfall for GUI interface
-
 #define PLOTCONSTELLATION
 #define PLOTWATERFALL
 #define PLOTSPECTRUM
-#define ConstellationHeight 90
-#define ConstellationWidth 90
-#define WaterfallWidth 205
-#define WaterfallHeight 64
-#define SpectrumWidth 205
-#define SpectrumHeight 64
+#define ConstellationHeight		90
+#define ConstellationWidth		90
+#define WaterfallWidth			205
+#define WaterfallHeight			64
+#define SpectrumWidth			205
+#define SpectrumHeight			64
 
-#define PLOTRADIUS 42
-#define WHITE 0
-#define Tomato 1
-#define Gold 2
-#define Lime 3
-#define Yellow 4
-#define Orange 5
-#define Khaki 6
-#define Cyan 7
-#define DeepSkyBlue 8
-#define RoyalBlue 9
-#define Navy 10
-#define Black 11
-#define Goldenrod 12
-#define Fuchsia 13
+#define PLOTRADIUS				42
+#define WHITE					0
+#define Tomato					1
+#define Gold					2
+#define Lime					3
+#define Yellow					4
+#define Orange					5
+#define Khaki					6
+#define Cyan					7
+#define DeepSkyBlue				8
+#define RoyalBlue				9
+#define Navy					10
+#define Black					11
+#define Goldenrod				12
+#define Fuchsia					13
 
-#endif
-#endif
+#endif	/* UseGUI */
+#endif	/* !TEENSY */
 
 
-#include "ecc.h"                // RS Constants
+#include "ecc.h"			// RS Constants
 
 
 typedef int BOOL;
@@ -133,35 +133,36 @@ typedef unsigned char UCHAR;
 
 #define VOID void
 
-#define FALSE 0
-#define TRUE 1
+#define FALSE	0
+#define TRUE	1
 
-#define False 0
-#define True 1
+#define False	0
+#define True	1
+
 
 // TEENSY Interface board equates
-
 #ifdef TEENSY
 #ifdef PIBOARD
-#define ISSLED LED0
+#define ISSLED		LED0
 #else
-#define ISSLED LED1
+#define ISSLED		LED1
 #endif
-#define IRSLED LED1
-#define TRAFFICLED LED2
+#define IRSLED		LED1
+#define TRAFFICLED	LED2
 #else
-#define ISSLED 1
-#define IRSLED 2
-#define TRAFFICLED 3
-#define PKTLED 4
+#define ISSLED		1
+#define IRSLED		2
+#define TRAFFICLED	3
+#define PKTLED		4
 #endif
+
 
 BOOL KeyPTT(BOOL State);
 
 UCHAR FrameCode(char *strFrameName);
 
 BOOL FrameInfo(UCHAR bytFrameType, int *blnOdd, int *intNumCar, char *strMod,
-			   int *intBaud, int *intDataLen, int *intRSLen, UCHAR *bytQualThres, char *strType);
+		int *intBaud, int *intDataLen, int *intRSLen, UCHAR *bytQualThres, char *strType);
 
 void ClearDataToSend();
 
@@ -204,6 +205,7 @@ void SendID(BOOL blnEnableCWID);
 BOOL CheckGSSyntax(char *GS);
 
 //void SetARDOPProtocolState(int value);
+
 unsigned int GenCRC16(unsigned char *Data, unsigned short length);
 
 void SendCommandToHost(char *Cmd);
@@ -402,8 +404,7 @@ extern int stcLastPingintRcvdSN;
 extern int stcLastPingintQuality;
 extern time_t stcLastPingdttTimeReceived;
 
-enum _ReceiveState        // used for initial receive testing...later put in correct protocol states
-{
+enum _ReceiveState {	// used for initial receive testing...later put in correct protocol states
 	SearchingForLeader,
 	AcquireSymbolSync,
 	AcquireFrameSync,
@@ -436,8 +437,8 @@ enum _ARDOPState {
 	DISC,
 	ISS,
 	IRS,
-	IDLE,     // ISS in quiet state ...no transmissions)
-	IRStoISS, // IRS during transition to ISS waiting for ISS's ACK from IRS's BREAK
+	IDLE,		// ISS in quiet state ... (no transmissions)
+	IRStoISS,	// IRS during transition to ISS waiting for ISS's ACK from IRS's BREAK
 	FECSend,
 	FECRcv
 };
@@ -448,7 +449,6 @@ extern const char ARDOPStates[8][9];
 
 
 // Enum of ARQ Substates
-
 enum _ARQSubStates {
 	None,
 	ISSConReq,
@@ -484,41 +484,41 @@ struct SEM {
 extern struct SEM Semaphore;
 
 
-#define BREAK 0x23
-#define IDLEFRAME 0x24
-#define OConReq200 0x25
-#define DISCFRAME 0x29
-#define END 0x2C
-#define ConRejBusy 0x2D
-#define ConRejBW 0x2E
-#define OConReq500 0x2F
+#define BREAK			0x23
+#define IDLEFRAME		0x24
+#define OConReq200		0x25
+#define DISCFRAME		0x29
+#define END				0x2C
+#define ConRejBusy		0x2D
+#define ConRejBW		0x2E
+#define OConReq500		0x2F
 
-#define ConAck200 0x39
-#define ConAck500 0x3A
-#define ConAck1000 0x3B
-#define ConAck2000 0x3C
-#define PINGACK 0x3D
-#define PING 0x3E
-#define OConReq2500 0x3F
-#define PktFrameHeader 0xC0        // Variable length frame Header
-#define PktFrameData 0xC1        // Variable length frame Data (Virtual Frsme Type)
+#define ConAck200		0x39
+#define ConAck500		0x3A
+#define ConAck1000		0x3B
+#define ConAck2000		0x3C
+#define PINGACK			0x3D
+#define PING			0x3E
+#define OConReq2500		0x3F
+#define PktFrameHeader	0xC0		// Variable length frame Header
+#define PktFrameData	0xC1		// Variable length frame Data (Virtual Frsme Type)
 
 // OFDM modes
+#define DOFDM_500_55_E	0xC2
+#define DOFDM_500_55_O	0xC3
+
+#define DOFDM_2500_55_E	0xC4
+#define DOFDM_2500_55_O	0xC5
+
+#define DOFDM_200_55_E	0xC8
+#define DOFDM_200_55_O	0xC9
+
+#define OFDMACK			0xC6
+
+#define DataACK			256		// Dummies
+#define DataNAK			257		// Dummies
 
 
-#define DOFDM_500_55_E    0xC2
-#define DOFDM_500_55_O    0xC3
-
-#define DOFDM_2500_55_E    0xC4
-#define DOFDM_2500_55_O    0xC5
-
-#define DOFDM_200_55_E    0xC8
-#define DOFDM_200_55_O    0xC9
-
-#define OFDMACK    0xC6
-
-#define DataACK    256 //	Dummies
-#define DataNAK    257 //	Dummies
 
 extern const short intTwoToneLeaderTemplate[120];  // holds just 1 symbol (0 ms) of the leader
 extern const short int50BaudTwoToneLeaderTemplate[240];  // holds just 1 symbol (20 ms) of the leader
@@ -601,9 +601,6 @@ extern UCHAR PTTOffCmdLen;
 
 extern int PTTMode;                // PTT Control Flags.
 
-
-
-
 extern char *CaptureDevices;
 extern char *PlaybackDevices;
 
@@ -665,15 +662,12 @@ extern int strAllDataModesLen;
 
 extern const short Rate[256];        // Data Rate (in bits/sec) by Frame Type
 
-
 extern BOOL newStatus;
 
 // RS Variables
-
 extern int MaxCorrections;
 
 // Stats counters
-
 extern int intLeaderDetects;
 extern int intLeaderSyncs;
 extern int intAccumLeaderTracking;
@@ -710,7 +704,6 @@ extern int intEnvelopeCors;
 extern float dblAvgCorMaxToMaxProduct;
 extern int intConReqSN;
 extern int intConReqQuality;
-
 
 extern int int4FSKQuality;
 extern int int4FSKQualityCnts;
@@ -764,14 +757,11 @@ extern int initMode;         // 0 - 4PSK 1 - 8PSK 2 = 16QAM
 extern BOOL SerialMode;            // Set if using SCS Mode, Unset ofr TCP Mode
 
 // Has to follow enum defs
-
-BOOL
-EncodeARQConRequest(char *strMyCallsign, char *strTargetCallsign, enum _ARQBandwidth ARQBandwidth, UCHAR *bytReturn);
+BOOL EncodeARQConRequest(char *strMyCallsign, char *strTargetCallsign, enum _ARQBandwidth ARQBandwidth, UCHAR *bytReturn);
 
 
 
 // OFDM Modes
-
 #define PSK2    0
 #define PSK4    1
 #define PSK8    2
@@ -784,5 +774,6 @@ extern int LastSentOFDMMode;        // For retries
 extern int LastSentOFDMType;        // For retries
 
 extern const char OFDMModes[8][6];
+
 
 #endif

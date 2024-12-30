@@ -280,7 +280,7 @@ UCHAR GenCRC8(char *Data) {
 			}
 		}
 	}
-	return intRegister & 0xFF; // LS 8 bits of Register 
+	return intRegister & 0xFF; // LS 8 bits of Register
 
 }
 
@@ -290,7 +290,7 @@ int ComputeInterFrameInterval(int intRequestedIntervalMS) {
 }
 
 
-//  Subroutine to Set the protocol state 
+//  Subroutine to Set the protocol state
 
 void SetARDOPProtocolState(int value) {
 	char HostCmd[24];
@@ -373,7 +373,7 @@ void SetARDOPProtocolState(int value) {
 
 
 
-//  Function to Get the next ARQ frame returns TRUE if frame repeating is enable 
+//  Function to Get the next ARQ frame returns TRUE if frame repeating is enable
 
 BOOL GetNextARQFrame() {
 	//Dim bytToMod(-1) As Byte
@@ -401,7 +401,7 @@ BOOL GetNextARQFrame() {
 		intRepeatCount += 1;
 		blnEnbARQRpt = FALSE;
 
-		if (intRepeatCount > 5)  // do 5 tries then force disconnect 
+		if (intRepeatCount > 5)  // do 5 tries then force disconnect
 		{
 			QueueCommandToHost("DISCONNECTED");
 			sprintf(HostCmd, "STATUS END NOT RECEIVED CLOSING ARQ SESSION WITH %s", strRemoteCallsign);
@@ -424,7 +424,7 @@ BOOL GetNextARQFrame() {
 		if (CheckForDisconnect())
 			return FALSE;
 
-	if (ProtocolState == ISS && ARQState == ISSConReq) // Handles Repeating ConReq frames 
+	if (ProtocolState == ISS && ARQState == ISSConReq) // Handles Repeating ConReq frames
 	{
 		intRepeatCount++;
 		if (intRepeatCount > ARQConReqRepeats) {
@@ -584,7 +584,7 @@ BOOL IsPingToMe(char *strCallsign) {
 ModeToSpeed() = {
 
 	40 768
-	42 
+	42
 	44 1296
 	46 429
 	48
@@ -594,30 +594,30 @@ ModeToSpeed() = {
 
 	50 1536
 	52 2592
-	54 
+	54
 	56 4305
 	58 429
 	5A 329
 	5C
-	5E 
+	5E
 
 	60 3072
 	62 5184
-	64 
+	64
 	66 8610
 	68 1762
 	6A
 	6C
-	6E 
+	6E
 
-	70 6144 
+	70 6144
 	72 10286
-	74 
+	74
 	76 17228
 	78 3624
 	7A 5863
 	7C 4338
-	7E 
+	7E
 
 	*/
 // Function to get base (even) data modes by bandwidth for ARQ sessions
@@ -648,7 +648,7 @@ ModeToSpeed() = {
 	"8PSK.1000.100.E", 62,
 	"16QAM.1000.100.E", 64
 
-	"4PSK.2000.100.E", //70 
+	"4PSK.2000.100.E", //70
 	"8PSK.2000.100.E",	72
 	"16QAM.2000.100.E", 74
 	"16QAM.2000.100.O",	// 75
@@ -677,7 +677,7 @@ static UCHAR DataModes500OFDM[] = {0x48, DOFDM_200_55_E, DOFDM_500_55_E};
 
 
 //4FSK500.100S, 4FSK500.100, 4PSK500.100, 4PSK1000.100, 8PSK.1000.100
-//(701, 865, 1509, 3018, 5133 bytes/min) 
+//(701, 865, 1509, 3018, 5133 bytes/min)
 
 static UCHAR DataModes1000[] = {0x4C, 0x4A, 0x50, 0x60, 0x62, 0x64};
 static UCHAR DataModes1000FSK[] = {0x4C, 0x4A};
@@ -685,7 +685,7 @@ static UCHAR DataModes1000FSK[] = {0x4C, 0x4A};
 // 2000 Non-FM
 
 //4FSK500.100S, 4FSK500.100, 4PSK500.100, 4PSK1000.100, 4PSK2000.100, 8PSK.2000.100, 16QAM.2000.100
-//(701, 865, 1509, 3018, 6144, 10386 bytes/min) 
+//(701, 865, 1509, 3018, 6144, 10386 bytes/min)
 //Dim byt2000 As Byte() = {&H4C, &H4A, &H50, &H60, &H70, &H72, &H74}  ' Note  addtion of 16QAM 8 carrier mode 16QAM2000.100.E/O
 
 static UCHAR DataModes2000[] = {0x4C, 0x4A, 0x50, 0x60, 0x70, 0x72, 0x74};
@@ -789,7 +789,7 @@ static UCHAR byt2000FM[] = {60, 85, 85, 0};
 
 
 UCHAR *GetShiftUpThresholds(int intBW) {
-	//' Initial values determined by finding the following process: (all using Pink Gaussian Noise channel 0 to 3 KHz) 
+	//' Initial values determined by finding the following process: (all using Pink Gaussian Noise channel 0 to 3 KHz)
 	//'       1) Find Min S:N that will give reliable (at least 4/5 tries) decoding at the fastest mode for the bandwidth.
 	//'       2) At that SAME S:N use the next fastest (more robust mode for the bandwidth)
 	//'       3) Over several frames average the Quality of the decoded frame in 2) above That quality value is the one that
@@ -818,18 +818,18 @@ unsigned short ModeHasWorked[16] = {0};        // used to attempt to make gear s
 unsigned short ModeHasBeenTried[16] = {0};
 unsigned short ModeNAKS[16] = {0};
 
-//  Subroutine to shift up to the next higher throughput or down to the next more robust data modes based on average reported quality 
+//  Subroutine to shift up to the next higher throughput or down to the next more robust data modes based on average reported quality
 
 float dblQuality = 0.0f;
 
 
 VOID Gearshift_2(int intAckNakValue, BOOL blnInit) {
 	// Goal here is to create an algorithm that will:
-	//	1) Shift up if the number of DataACKHiQ received outnumber DataACKs received 
+	//	1) Shift up if the number of DataACKHiQ received outnumber DataACKs received
 	//	2) Don't shift on continous DataACKs
 	//	3) Shift down quickly on a few DataNAKLoQ
-	//	4) Shift down if DataNAKs exceed DataACKs .e.g.  < 50% ACKs 
-	//	This can be refined later with different or dynamic Trip points etc. 
+	//	4) Shift down if DataNAKs exceed DataACKs .e.g.  < 50% ACKs
+	//	This can be refined later with different or dynamic Trip points etc.
 
 
 	char strOldMode[18] = "";
@@ -849,7 +849,7 @@ VOID Gearshift_2(int intAckNakValue, BOOL blnInit) {
 		return;
 	}
 
-	dblQuality = (dblAlpha * intAckNakValue) + ((1 - dblAlpha) * dblQuality);  // Exponenial low passfilter 
+	dblQuality = (dblAlpha * intAckNakValue) + ((1 - dblAlpha) * dblQuality);  // Exponenial low passfilter
 
 	if (intAckNakValue > 0) {
 		ModeHasWorked[intFrameTypePtr]++;
@@ -927,7 +927,7 @@ VOID Gearshift_2(int intAckNakValue, BOOL blnInit) {
 			WriteDebugLog(LOGINFO, "[ARDOPprotocol.Gearshift_2]  No Change possible: dblQuality= %f", dblQuality);
 		}
 
-		// In the future may want to use something  to base shifting on how many bytes remaining vs capacity of the current frame (low priority)  
+		// In the future may want to use something  to base shifting on how many bytes remaining vs capacity of the current frame (low priority)
 	} else {
 		WriteDebugLog(LOGINFO, "[ARDOPprotocol.Gearshift_2]  No Change: dblQuality= %f", dblQuality);
 		intShiftUpDn = 0;
@@ -958,7 +958,7 @@ void Gearshift_2(int Value, BOOL blnInit)
 void Gearshift_9()
 {
 	// More complex mechanism to gear shift based on intAvgQuality, current state and bytes remaining.
-	// This can be refined later with different or dynamic Trip points etc. 
+	// This can be refined later with different or dynamic Trip points etc.
 	// Revised Oct 8, 2016  Rev 0.7.2.2 to use intACKctr as well as intNAKctr and bytShiftUpThresholds using FrameInfo.GetShiftUpThresholds
 
 	char strOldMode[18] = "";
@@ -982,9 +982,9 @@ void Gearshift_9()
 		strcpy(strNewMode, Name(bytFrameTypesForBW[intFrameTypePtr - 1]));
 		strNewMode[strlen(strNewMode) - 2] = 0;
 
- 		WriteDebugLog(LOGINFO, "[ARDOPprotocol.Gearshift_9] intNAKCtr= %d Shift down from Frame type %s New Mode: %s", intNAKctr, strOldMode, strNewMode);
+		WriteDebugLog(LOGINFO, "[ARDOPprotocol.Gearshift_9] intNAKCtr= %d Shift down from Frame type %s New Mode: %s", intNAKctr, strOldMode, strNewMode);
 		intShiftUpDn = -1;
-		
+
 		intAvgQuality = 0; // Clear intAvgQuality causing the first received Quality to become the new average
 		intNAKctr = 0;
 		intACKctr = 0;
@@ -992,16 +992,16 @@ void Gearshift_9()
 	}
 	else if (intAvgQuality > bytShiftUpThresholds[intFrameTypePtr] && intFrameTypePtr < (bytFrameTypesForBWLength - 1) && intACKctr >= 2)
 	{
-		// if above Hi Trip setup so next call of GetNextFrameData will select a faster mode if one is available 
-		
+		// if above Hi Trip setup so next call of GetNextFrameData will select a faster mode if one is available
+
 		// But don't shift if we can send remaining data in current mode
-		
+
 		if (intBytesRemaining <= FrameSize[bytFrameTypesForBW[intFrameTypePtr]])
 		{
 			intShiftUpDn = 0;
 			return;
 		}
-		
+
 		// if the new mode has been tried before, and immediately failed, don't try again
 		// till we get at least 5 sucessive acks
 
@@ -1017,10 +1017,10 @@ void Gearshift_9()
 
 		strcpy(strNewMode, Name(bytFrameTypesForBW[intFrameTypePtr + intShiftUpDn]));
 		strNewMode[strlen(strNewMode) - 2] = 0;
-	
+
 		WriteDebugLog(LOGINFO, "[ARDOPprotocol.Gearshift_9] ShiftUpDn = %d, AvgQuality=%d New Mode: %s",
 			intShiftUpDn, intAvgQuality, strNewMode);
-           
+
 		intAvgQuality = 0; // Clear intAvgQuality causing the first received Quality to become the new average
 		intNAKctr = 0;
 		intACKctr = 0;
@@ -1033,7 +1033,7 @@ void Gearshift_9()
 void Gearshift_5x()
 {
 	//' More complex mechanism to gear shift based on intAvgQuality, current state and bytes remaining.
-	//' This can be refined later with different or dynamic Trip points etc. 
+	//' This can be refined later with different or dynamic Trip points etc.
 
 	int intTripHi = 79;		// Modified in revision 0.4.0 (was 82)
 	int intTripLow = 69;	// Modified in revision 0.4.0 (was 72)
@@ -1042,21 +1042,21 @@ void Gearshift_5x()
 	if (intNAKctr >= 5 && intFrameTypePtr > 0)	//  NAK threshold changed from 10 to 6 on rev 0.3.5.2
 	{
 		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.Gearshift_5] intNAKCtr=%d ShiftUpDn = -1", intNAKctr);
-        
+
 		intShiftUpDn = -1;  //Shift down if 5 NAKs without ACK.
 		intAvgQuality = (intTripHi + intTripLow) / 2;	 // init back to mid way
 		intNAKctr = 0;
 	}
-	else if (intAvgQuality > intTripHi && intFrameTypePtr < bytFrameTypesForBWLength) // ' if above Hi Trip setup so next call of GetNextFrameData will select a faster mode if one is available 
+	else if (intAvgQuality > intTripHi && intFrameTypePtr < bytFrameTypesForBWLength) // ' if above Hi Trip setup so next call of GetNextFrameData will select a faster mode if one is available
 	{
 		intShiftUpDn = 0;
-		
+
 		if (TuningRange == 0)
 		{
 			switch (intFrameTypePtr)
 			{
 			case 0:
-				
+
 				if (intBytesRemaining > 64)
 					intShiftUpDn = 2;
 				else if (intBytesRemaining > 32)
@@ -1065,16 +1065,16 @@ void Gearshift_5x()
 				break;
 
 			case 1:
-		
+
 				if (intBytesRemaining > 200)
 					intShiftUpDn = 2;
 				else if (intBytesRemaining > 64)
 					intShiftUpDn = 1;
 
 				break;
- 
+
 			case 2:
-	
+
 				if (intBytesRemaining > 400)
 					intShiftUpDn = 2;
 				else if (intBytesRemaining > 200)
@@ -1083,17 +1083,17 @@ void Gearshift_5x()
 				break;
 
 			case 3:
-				
+
 				if (intBytesRemaining > 600) intShiftUpDn = 1;
 				break;
-		
+
 			case 4:
-				
+
 				if (intBytesRemaining > 512) intShiftUpDn = 1;
 				break;
 			}
 		}
-		
+
 		else if (intSessionBW == 200)
 			intShiftUpDn = 1;
 		else if (intFrameTypePtr == 0 && intBytesRemaining > 32)
@@ -1103,32 +1103,32 @@ void Gearshift_5x()
 
 		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.Gearshift_5] ShiftUpDn = %d, AvgQuality=%d Resetting to %d New Mode: %s",
 			intShiftUpDn, intAvgQuality, (intTripHi + intTripLow) / 2, Name(bytFrameTypesForBW[intFrameTypePtr + intShiftUpDn]));
-	
+
 		intAvgQuality = 0;	 // init back to mid way
 		intNAKctr = 0;
 	}
-	else if (intAvgQuality < intTripLow && intFrameTypePtr > 0)   // if below Low Trip setup so next call of GetNextFrameData will select a more robust mode if one is available 
+	else if (intAvgQuality < intTripLow && intFrameTypePtr > 0)   // if below Low Trip setup so next call of GetNextFrameData will select a more robust mode if one is available
 	{
 		intShiftUpDn = 0;
-		
+
 		if (TuningRange == 0)
 		{
 			switch (intFrameTypePtr)
 			{
 			case 1:
-				
+
 				if (intBytesRemaining < 33)  intShiftUpDn = -1;
 				break;
- 
+
 			case 2:
 			case 4:
 			case 5:
-	
+
 				intShiftUpDn = -1;
 				break;
 
 			case 3:
-				
+
 				intShiftUpDn = -2;
 				break;
 			}
@@ -1146,11 +1146,11 @@ void Gearshift_5x()
 
 		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.Gearshift_5] ShiftUpDn = %d, AvgQuality=%d Resetting to %d New Mode: %s",
 			intShiftUpDn, intAvgQuality, (intTripHi + intTripLow) / 2, Name(bytFrameTypesForBW[intFrameTypePtr + intShiftUpDn]));
-			
+
 		intAvgQuality;  // init back to mid way
 		intNAKctr = 0;
 	}
-	
+
 //	if (intShiftUpDn < 0)
 //		intShiftDNs++;
 //	else if (intShiftUpDn > 0)
@@ -1166,24 +1166,29 @@ void ComputeQualityAvg(int intReportedQuality) {
 		intAvgQuality = intReportedQuality;
 		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.ComputeQualityAvg] Initialize AvgQuality= %d", intAvgQuality);
 	} else {
-		intAvgQuality =
-				intAvgQuality * (1 - dblAlpha) + (dblAlpha * intReportedQuality) + 0.5f; // exponential averager
-		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.ComputeQualityAvg] Reported Quality= %d  New Avg Quality= %d",
-					  intReportedQuality, intAvgQuality);
+		intAvgQuality = intAvgQuality * (1 - dblAlpha) + (dblAlpha * intReportedQuality) + 0.5f; // exponential averager
+		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.ComputeQualityAvg] Reported Quality= %d  New Avg Quality= %d", intReportedQuality, intAvgQuality);
 	}
 }
 
-// a function to get then number of carriers from the frame type
-
+/**
+ * \brief Get the number of carriers from the frame type
+ *
+ * \param bytFrameType The frame type
+ *
+ * \return The number of carriers
+ */
 int GetNumCarriers(UCHAR bytFrameType) {
-	int intNumCar, dummy;
+	int intNumCar;
+	int dummy;
 	char strType[18];
 	char strMod[16];
 
-	if (FrameInfo(bytFrameType, &dummy, &intNumCar, strMod, &dummy, &dummy, &dummy, (UCHAR *) &dummy, strType))
-		return intNumCar;
+	if (FrameInfo(bytFrameType, &dummy, &intNumCar, strMod, &dummy, &dummy, &dummy, (UCHAR *) &dummy, strType)) {
+		return (intNumCar);
+	}
 
-	return 0;
+	return (0);
 }
 
 // Subroutine to determine the next data frame to send (or IDLE if none)
@@ -1193,30 +1198,26 @@ void SendData() {
 	int Len;
 
 	// Check for ID frame required (every 10 minutes)
-
-	if (blnDISCRepeating)
+	if (blnDISCRepeating) {
 		return;
+	}
 
 	switch (ProtocolState) {
 		case IDLE:
-
 			WriteDebugLog(LOGDEBUG, "[ARDOPProtocol.SendData] Sending Data from IDLE state! Exit SendData");
 			return;
 
 		case ISS:
-
-			if (CheckForDisconnect())
+			if (CheckForDisconnect()) {
 				return;
+			}
 
 			Send10MinID();  // Send ID if 10 minutes since last
-
 			if (bytDataToSendLength > 0) {
-				WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.SendData] DataToSend = %d bytes, In ProtocolState ISS",
-							  bytDataToSendLength);
+				WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.SendData] DataToSend = %d bytes, In ProtocolState ISS", bytDataToSendLength);
 
 				//' Get the data from the buffer here based on current data frame type
 				//' (Handles protocol Rule 2.1)
-
 				Len = bytQDataInProcessLen = GetNextFrameData(&intShiftUpDn, &bytCurrentFrameType, strMod, FALSE);
 
 				blnLastFrameSentData = TRUE;
@@ -1224,26 +1225,21 @@ void SendData() {
 				// This mechanism lengthens the intFrameRepeatInterval for multiple carriers (to provide additional decoding time at remote end)
 				// This does not slow down the throughput significantly since if an ACK or NAK is received by the sending station
 				// the repeat interval does not come into play.
-
 				switch (GetNumCarriers(bytCurrentFrameType)) {
 					case 1:
-						intFrameRepeatInterval = ComputeInterFrameInterval(
-								1500); // fairly conservative based on measured leader from remote end
+						intFrameRepeatInterval = ComputeInterFrameInterval(1500); // fairly conservative based on measured leader from remote end
 						break;
 
 					case 2:
-						intFrameRepeatInterval = ComputeInterFrameInterval(
-								1700); //  fairly conservative based on measured leader from remote end
+						intFrameRepeatInterval = ComputeInterFrameInterval(1700); //  fairly conservative based on measured leader from remote end
 						break;
 
 					case 4:
-						intFrameRepeatInterval = ComputeInterFrameInterval(
-								1900); // fairly conservative based on measured leader from remote end
+						intFrameRepeatInterval = ComputeInterFrameInterval(1900); // fairly conservative based on measured leader from remote end
 						break;
 
 					case 8:
-						intFrameRepeatInterval = ComputeInterFrameInterval(
-								2100); // fairly conservative based on measured leader from remote end
+						intFrameRepeatInterval = ComputeInterFrameInterval(2100); // fairly conservative based on measured leader from remote end
 						break;
 
 					default:
@@ -1256,15 +1252,14 @@ void SendData() {
 
 				if (strcmp(strMod, "4FSK") == 0) {
 					EncLen = EncodeFSKData(bytCurrentFrameType, bytDataToSend, Len, bytEncodedBytes);
-					if (bytCurrentFrameType >= 0x7A && bytCurrentFrameType <= 0x7D)
-						Mod4FSK600BdDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen,
-												intCalcLeader);  // Modulate Data frame
-					else
+					if (bytCurrentFrameType >= 0x7A && bytCurrentFrameType <= 0x7D) {
+						Mod4FSK600BdDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
+					} else {
 						Mod4FSKDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
+					}
 				} else if (strcmp(strMod, "16FSK") == 0) {
 					EncLen = EncodeFSKData(bytCurrentFrameType, bytDataToSend, Len, bytEncodedBytes);
-					Mod16FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen,
-										intCalcLeader);  // Modulate Data frame
+					Mod16FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 				} else if (strcmp(strMod, "8FSK") == 0) {
 					EncLen = EncodeFSKData(bytCurrentFrameType, bytDataToSend, Len,
 										   bytEncodedBytes);          //      intCurrentFrameSamples = Mod8FSKData(bytFrameType, bytData);
@@ -1276,11 +1271,10 @@ void SendData() {
 					int MaxRobust = 19 * 9;            // 500 2PSK
 
 					// bytDataToSendLength is data still queued. BytesSent is unacked data
-
 					// if none outstanding and all can be sent in most robust mode, use it
-
-					if ((bytCurrentFrameType & 0xFE) == DOFDM_200_55_E)
+					if ((bytCurrentFrameType & 0xFE) == DOFDM_200_55_E) {
 						MaxRobust = 19 * 3;            // 200 2PSK
+					}
 
 					LastSentOFDMType = bytCurrentFrameType;
 
@@ -1307,8 +1301,7 @@ void SendData() {
 				} else        // This handles PSK and QAM
 				{
 					EncLen = EncodePSKData(bytCurrentFrameType, bytDataToSend, Len, bytEncodedBytes);
-					ModPSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen,
-									  intCalcLeader);  // Modulate Data frame
+					ModPSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 				}
 
 				return;
@@ -1341,7 +1334,7 @@ int GetNextFrameData(int *intUpDn, UCHAR *bytFrameTypeToSend, UCHAR *strMod, BOO
 	// Initialize if blnInitialize = true
 	// Then call with intUpDn and blnInitialize = FALSE:
 	//       intUpDn = 0 ' use the current mode pointed to by intFrameTypePtr
-	//       intUpdn < 0    ' Go to a more robust mode if available limited to the most robust mode for the bandwidth 
+	//       intUpdn < 0    ' Go to a more robust mode if available limited to the most robust mode for the bandwidth
 	//       intUpDn > 0    ' Go to a less robust (faster) mode if avaialble, limited to the fastest mode for the bandwidth
 
 	BOOL blnOdd;
@@ -1404,7 +1397,7 @@ int GetNextFrameData(int *intUpDn, UCHAR *bytFrameTypeToSend, UCHAR *strMod, BOO
 	//    Return Noth
 
 	if ((bytCurrentFrameType & 1) == (bytLastARQDataFrameAcked & 1)) {
-		*bytFrameTypeToSend = bytCurrentFrameType ^ 1;  // This ensures toggle of  Odd and Even 
+		*bytFrameTypeToSend = bytCurrentFrameType ^ 1;  // This ensures toggle of  Odd and Even
 		bytLastARQDataFrameSent = *bytFrameTypeToSend;
 	} else {
 		*bytFrameTypeToSend = bytCurrentFrameType;
@@ -1444,12 +1437,12 @@ void InitializeConnection() {
 	// Sub to Initialize before a new Connection
 
 	strRemoteCallsign[0] = 0; // remote station call sign
-	intOBBytesToConfirm = 0; // remaining bytes to confirm  
+	intOBBytesToConfirm = 0; // remaining bytes to confirm
 	intBytesConfirmed = 0; // Outbound bytes confirmed by ACK and squenced
 	intReceivedLeaderLen = 0; // Zero out received leader length (the length of the leader as received by the local station
-	intReportedLeaderLen = 0; // Zero out the Reported leader length the length reported to the remote station 
-	bytSessionID = 0xFF; //  Session ID 
-	blnLastPSNPassed = FALSE; //  the last PSN passed True for Odd, FALSE for even. 
+	intReportedLeaderLen = 0; // Zero out the Reported leader length the length reported to the remote station
+	bytSessionID = 0xFF; //  Session ID
+	blnLastPSNPassed = FALSE; //  the last PSN passed True for Odd, FALSE for even.
 	blnInitiatedConnection = FALSE; //  flag to indicate if this station initiated the connection
 	dblAvgPECreepPerCarrier = 0; //  computed phase error creep
 	dttLastIDSent = Now; //  date/time of last ID
@@ -1470,7 +1463,7 @@ void InitializeConnection() {
 	ClearOFDMVariables();
 }
 
-// This sub processes a correctly decoded ConReq frame, decodes it an passed to host for display if it doesn't duplicate the prior passed frame. 
+// This sub processes a correctly decoded ConReq frame, decodes it an passed to host for display if it doesn't duplicate the prior passed frame.
 
 void ProcessUnconnectedConReqFrame(int intFrameType, UCHAR *bytData) {
 	static char strLastStringPassedToHost[80] = "";
@@ -1486,7 +1479,7 @@ void ProcessUnconnectedConReqFrame(int intFrameType, UCHAR *bytData) {
 }
 
 
-//	This is the main subroutine for processing ARQ frames 
+//	This is the main subroutine for processing ARQ frames
 
 void ProcessRcvdARQFrame(UCHAR intFrameType, UCHAR *bytData, int DataLen, BOOL blnFrameDecodedOK) {
 	//	blnFrameDecodedOK should always be true except in the case of a failed data frame ...Which is then NAK'ed if in IRS Data state
@@ -1643,7 +1636,7 @@ void ProcessRcvdARQFrame(UCHAR intFrameType, UCHAR *bytData, int DataLen, BOOL b
 				// Not for us - cancel pending
 
 				QueueCommandToHost("CANCELPENDING");
-//			ProcessUnconnectedConReqFrame(intFrameType, bytData);  //  displays data if not connnected.  
+//			ProcessUnconnectedConReqFrame(intFrameType, bytData);  //  displays data if not connnected.
 			}
 			blnEnbARQRpt = FALSE;
 			return;
@@ -2594,7 +2587,7 @@ void ProcessRcvdARQFrame(UCHAR intFrameType, UCHAR *bytData, int DataLen, BOOL b
 // Function to determine the IRS ConAck to reply based on intConReqFrameType received and local MCB.ARQBandwidth setting
 
 int IRSNegotiateBW(int intConReqFrameType) {
-	//	returns the correct ConAck frame number to establish the session bandwidth to the ISS or the ConRejBW frame number if incompatible 
+	//	returns the correct ConAck frame number to establish the session bandwidth to the ISS or the ConRejBW frame number if incompatible
 	//  if acceptable bandwidth sets stcConnection.intSessionBW
 
 	UseOFDM = FALSE;
@@ -2760,7 +2753,7 @@ BOOL SendARQConnectRequest(char *strMycall, char *strTargetCall) {
 	//  Go to the ISS State and ISSConREq sub state
 	//  Encode the connect frame with extended Leader
 	//  initialize the ConReqCount and set the Frame repeat interval
-	//  (Handles protocol rule 1.1) 
+	//  (Handles protocol rule 1.1)
 
 	InitializeConnection();
 	intRmtLeaderMeas = 0;
@@ -2802,7 +2795,7 @@ BOOL SendARQConnectRequest(char *strMycall, char *strTargetCall) {
 
 	Mod4FSKDataAndPlay(&bytEncodedBytes[0], EncLen, LeaderLength);        // only returns when all sent
 
-	//' Update the main form menu status lable 
+	//' Update the main form menu status lable
 	//        Dim stcStatus As Status = Nothing
 	//        stcStatus.ControlName = "mnuBusy"
 	//        stcStatus.Text = "Calling " & strTargetCall
@@ -2859,28 +2852,32 @@ BOOL CheckForDisconnect() {
 	return FALSE;
 }
 
-// subroutine to implement Host Command BREAK
 
+/**
+ * \brief Implements the host command "BREAK"
+ */
 void Break() {
 	time_t dttStartWait = Now;
 
 	if (ProtocolState != IRS) {
-		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.Break] |BREAK command received in ProtocolState: %s :",
-					  ARDOPStates[ProtocolState]);
+		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.Break] |BREAK command received in ProtocolState: %s :", ARDOPStates[ProtocolState]);
 		return;
 	}
 
 	WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.Break] BREAK command received with AutoBreak = %d", AutoBreak);
-	blnBREAKCmd = TRUE; // Set flag to process pending BREAK
+	blnBREAKCmd = TRUE;		// Set flag to process pending BREAK
 }
 
-// Function to abort an FEC or ARQ transmission 
 
+/**
+ * \brief About an FEC or ARQ transmission
+ */
 void Abort() {
 	blnAbort = True;
 
-	if (ProtocolState == IDLE || ProtocolState == IRS || ProtocolState == IRStoISS)
+	if ((ProtocolState == IDLE) || (ProtocolState == IRS) || (ProtocolState == IRStoISS)) {
 		GetNextARQFrame();
+	}
 }
 
 
@@ -2918,7 +2915,6 @@ void ClearTuningStats() {
 	intGoodQAMSummationDecodes = 0;
 	intFailedOFDMFrameDataDecodes = 0;
 	intAvgOFDMQuality = 0;
-
 
 	dblFSKTuningSNAvg = 0;
 	dblLeaderSNAvg = 0;
@@ -2958,10 +2954,8 @@ void ClearQualityStats() {
 	memset(OFDMCarriersNaked, 0, sizeof(OFDMCarriersNaked));
 	memset(OFDMCarriersAcked, 0, sizeof(OFDMCarriersAcked));
 
-
 	intFSKSymbolsDecoded = 0;
 	intPSKSymbolsDecoded = 0;
-
 	intQAMQuality = 0;
 	intQAMQualityCnts = 0;
 	intQAMSymbolsDecoded = 0;
@@ -3019,33 +3013,33 @@ void LogStats() {
 		Statsprintf("     Avg 4FSK Quality=%d on %d frame(s)", int4FSKQuality / int4FSKQualityCnts, int4FSKQualityCnts);
 	}
 
-	if (int8FSKQualityCnts > 0)
+	if (int8FSKQualityCnts > 0) {
 		Statsprintf("     Avg 8FSK Quality=%d on %d frame(s)", int8FSKQuality / int8FSKQualityCnts, int8FSKQualityCnts);
+	}
 
-	if (int16FSKQualityCnts > 0)
-		Statsprintf("     Avg 16FSK Quality=%d on %d frame(s)", int16FSKQuality / int16FSKQualityCnts,
-					int16FSKQualityCnts);
+	if (int16FSKQualityCnts > 0) {
+		Statsprintf("     Avg 16FSK Quality=%d on %d frame(s)", int16FSKQuality / int16FSKQualityCnts, int16FSKQualityCnts);
+	}
 
-	if (intPSKQualityCnts[0] > 0)
-		Statsprintf("     Avg 4PSK Quality=%d on %d frame(s)", intPSKQuality[0] / intPSKQualityCnts[0],
-					intPSKQualityCnts[0]);
+	if (intPSKQualityCnts[0] > 0) {
+		Statsprintf("     Avg 4PSK Quality=%d on %d frame(s)", intPSKQuality[0] / intPSKQualityCnts[0], intPSKQualityCnts[0]);
+	}
 
-	if (intPSKQualityCnts[1] > 0)
-		Statsprintf("     Avg 8PSK Quality=%d on %d frame(s)", intPSKQuality[1] / intPSKQualityCnts[1],
-					intPSKQualityCnts[1]);
+	if (intPSKQualityCnts[1] > 0) {
+		Statsprintf("     Avg 8PSK Quality=%d on %d frame(s)", intPSKQuality[1] / intPSKQualityCnts[1], intPSKQualityCnts[1]);
+	}
 
-	if (intQAMQualityCnts > 0)
+	if (intQAMQualityCnts > 0) {
 		Statsprintf("     Avg QAM Quality=%d on %d frame(s)", intQAMQuality / intQAMQualityCnts, intQAMQualityCnts);
-
+	}
 
 	for (i = 0; i < 8; i++) {
-		if (intOFDMQualityCnts[i])
-			Statsprintf("     Avg OFDM/%s Quality=%d on %d frame(s)", OFDMModes[i],
-						intOFDMQuality[i] / intOFDMQualityCnts[i], intOFDMQualityCnts[i]);
+		if (intOFDMQualityCnts[i]) {
+			Statsprintf("     Avg OFDM/%s Quality=%d on %d frame(s)", OFDMModes[i], intOFDMQuality[i] / intOFDMQualityCnts[i], intOFDMQualityCnts[i]);
+		}
 	}
 
 	// Experimental logging of Frame Type ACK and NAK counts
-
 	Statsprintf("");
 	Statsprintf("Type               ACKS  NAKS");
 
@@ -3054,9 +3048,9 @@ void LogStats() {
 	}
 
 	for (i = 0; i < 8; i++) {
-		if (OFDMCarriersReceived[i])
-			Statsprintf("OFDM/%s  Total Carriers %5d Decoded Carriers %5d", OFDMModes[i], OFDMCarriersReceived[i],
-						OFDMCarriersDecoded[i]);
+		if (OFDMCarriersReceived[i]) {
+			Statsprintf("OFDM/%s  Total Carriers %5d Decoded Carriers %5d", OFDMModes[i], OFDMCarriersReceived[i], OFDMCarriersDecoded[i]);
+		}
 	}
 
 	Statsprintf("************************************************************************************************");

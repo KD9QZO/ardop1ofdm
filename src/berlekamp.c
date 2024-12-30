@@ -3,7 +3,7 @@
  *
  * This software library is licensed under terms of the GNU GENERAL
  * PUBLIC LICENSE
- * 
+ *
  *
  * RSCODE is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ static int Lambda[MAXDEG];
 /* The Error Evaluator Polynomial */
 static int Omega[MAXDEG];
 
+
 /* local ANSI declarations */
 static int compute_discrepancy(int lambda[], int S[], int L, int n);
 
@@ -53,6 +54,7 @@ static void init_gamma(int gamma[]);
 static void compute_modified_omega(void);
 
 static void mul_z_poly(int src[]);
+
 
 /* error locations found using Chien's search*/
 static int ErrorLocs[256];
@@ -65,9 +67,9 @@ static int ErasureLocs[256];
 static int NErasures;
 
 
+
 /* From  Cain, Clark, "Error-Correction Coding For Digital Communications", pp. 216. */
-void
-Modified_Berlekamp_Massey(void) {
+void Modified_Berlekamp_Massey(void) {
 	int n, L, L2, k, d, i;
 	int psi[MAXDEG], psi2[MAXDEG], D[MAXDEG];
 	int gamma[MAXDEG];
@@ -84,14 +86,10 @@ Modified_Berlekamp_Massey(void) {
 	L = NErasures;
 
 	for (n = NErasures; n < NPAR; n++) {
-
 		d = compute_discrepancy(psi, synBytes, L, n);
-
 		if (d != 0) {
-
 			/* psi2 = psi - d*D */
 			for (i = 0; i < NPAR * 2; i++) psi2[i] = psi[i] ^ gmult(d, D[i]);
-
 
 			if (L < (n - k)) {
 				L2 = n - k;
@@ -110,13 +108,11 @@ Modified_Berlekamp_Massey(void) {
 
 	for (i = 0; i < NPAR * 2; i++) Lambda[i] = psi[i];
 	compute_modified_omega();
-
-
 }
 
 
 /* given Psi (called Lambda in Modified_Berlekamp_Massey) and synBytes,
-   compute the combined erasure/error evaluator polynomial as 
+   compute the combined erasure/error evaluator polynomial as
    Psi*S mod z^4
   */
 void
@@ -127,7 +123,6 @@ compute_modified_omega() {
 	mult_polys(product, Lambda, synBytes);
 	zero_poly(Omega);
 	for (i = 0; i < NPAR; i++) Omega[i] = product[i];
-
 }
 
 
@@ -155,8 +150,7 @@ mult_polys(int dst[], int p1[], int p2[]) {
 
 
 /* gamma = product (1-z*a^Ij) for erasure locs Ij */
-void
-init_gamma(int gamma[]) {
+void init_gamma(int gamma[]) {
 	int e, tmp[MAXDEG];
 
 	zero_poly(gamma);
@@ -172,8 +166,7 @@ init_gamma(int gamma[]) {
 }
 
 
-void
-compute_next_omega(int d, int A[], int dst[], int src[]) {
+void compute_next_omega(int d, int A[], int dst[], int src[]) {
 	int i;
 	for (i = 0; i < NPAR * 2; i++) {
 		dst[i] = src[i] ^ gmult(d, A[i]);
@@ -181,8 +174,7 @@ compute_next_omega(int d, int A[], int dst[], int src[]) {
 }
 
 
-int
-compute_discrepancy(int lambda[], int S[], int L, int n) {
+int compute_discrepancy(int lambda[], int S[], int L, int n) {
 	int i, sum = 0;
 
 	for (i = 0; i <= L; i++)
@@ -226,14 +218,13 @@ static void mul_z_poly(int src[]) {
 
 
 /* Finds all the roots of an error-locator polynomial with coefficients
- * Lambda[j] by evaluating Lambda at successive values of alpha. 
- * 
+ * Lambda[j] by evaluating Lambda at successive values of alpha.
+ *
  * This can be tested with the decoder's equations case.
  */
 
 
-void
-Find_Roots(void) {
+void Find_Roots(void) {
 	int sum, r, k;
 	NErrors = 0;
 
@@ -252,41 +243,47 @@ Find_Roots(void) {
 }
 
 
-/* Combined Erasure And Error Magnitude Computation
- * 
- * Pass in the codeword, its size in bytes, as well as
- * an array of any known erasure locations, along the number
- * of these erasures.
- * 
- * Evaluate Omega(actually Psi)/Lambda' at the roots
- * alpha^(-i) for error locs i. 
+
+/**
+ * \brief Combined Erasure And Error Magnitude Computation
  *
- * returns 1 if everything ok, or 0 if an out-of-bounds error is found
+ * Pass in the codeword, its size in bytes, as well as an array of any known erasure locations, along the number of
+ * these erasures.
  *
+ * Evaluate Omega(actually Psi)/Lambda' at the roots alpha^(-i) for error locs i.
+ *
+ * \param	codeword	The codeword
+ * \param	csize		The size of the \p codeword in bytes
+ * \param	nerasures	An array of any known erasure locations
+ * \param	erasures	The number of these erasures
+ *
+ * \return Returns \b 1 if everything is OK, or \b 0 if an out-of-bounds error is found.
+ * \retval	1	Everything is OK
+ * \retval	0	An out-of-bounds error was found
  */
+int correct_errors_erasures(unsigned char codeword[], int csize, int nerasures, int erasures[]) {
+	int r;
+	int i;
+	int j;
+	int err;
 
-int
-correct_errors_erasures(unsigned char codeword[],
-						int csize,
-						int nerasures,
-						int erasures[]) {
-	int r, i, j, err;
-
-	/* If you want to take advantage of erasure correction, be sure to
-	   set NErasures and ErasureLocs[] with the locations of erasures.
-	   */
+	/*
+	 * If you want to take advantage of erasure correction, be sure to set NErasures and ErasureLocs[] with the
+	 * locations of erasures.
+	 */
 	NErasures = nerasures;
-	for (i = 0; i < NErasures; i++) ErasureLocs[i] = erasures[i];
+	for (i = 0; i < NErasures; i++) {
+		ErasureLocs[i] = erasures[i];
+	}
 
 	Modified_Berlekamp_Massey();
 	Find_Roots();
 
-
-	if (DEBUG) fprintf(stderr, "RS found %d errors\n", NErrors);
-
+	if (DEBUG) {
+		fprintf(stderr, "RS found %d errors\n", NErrors);
+	}
 
 	if ((NErrors <= MaxErrors) && NErrors > 0) {
-
 		/* first check for illegal error locs */
 		for (r = 0; r < NErrors; r++) {
 			if (ErrorLocs[r] >= csize) {
@@ -296,10 +293,12 @@ correct_errors_erasures(unsigned char codeword[],
 		}
 
 		for (r = 0; r < NErrors; r++) {
-			int num, denom;
-			i = ErrorLocs[r];
-			/* evaluate Omega at alpha^(-i) */
+			int num;
+			int denom;
 
+			i = ErrorLocs[r];
+
+			/* evaluate Omega at alpha^(-i) */
 			num = 0;
 			for (j = 0; j < NPAR * 2; j++)
 				num ^= gmult(Omega[j], gexp[((255 - i) * j) % 255]);
@@ -311,14 +310,17 @@ correct_errors_erasures(unsigned char codeword[],
 			}
 
 			err = gmult(num, ginv(denom));
-			if (DEBUG) fprintf(stderr, "Error magnitude %#x at loc %d\n", err, csize - i);
+			if (DEBUG) {
+				fprintf(stderr, "Error magnitude %#x at loc %d\n", err, csize - i);
+			}
 
 			codeword[csize - i - 1] ^= err;
 		}
 		return (1);
 	} else {
-		if (DEBUG && NErrors) fprintf(stderr, "Uncorrectable codeword\n");
+		if (DEBUG && NErrors) {
+			fprintf(stderr, "Uncorrectable codeword\n");
+		}
 		return (0);
 	}
 }
-

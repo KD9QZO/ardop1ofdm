@@ -25,10 +25,10 @@
  */
 
 /****************************************************************
-  
+
   Below is NPAR, the only compile-time parameter you should have to
   modify.
-  
+
   It is the number of parity bytes which will be appended to
   your data to create a codeword.
 
@@ -42,27 +42,33 @@
 
   ****************************************************************/
 
-#define MAXNPAR 64        //	Sets size of static tables
+#ifndef ECC_H_
+#define ECC_H_
 
-extern int NPAR;        // Currently used number
+
+#define MAXNPAR 64		// Sets size of static tables
+
+extern int NPAR;		// Currently used number
 
 /****************************************************************/
-
-
 
 
 #define TRUE 1
 #define FALSE 0
 
+
 typedef unsigned long BIT32;
 typedef unsigned short BIT16;
+
 
 /* **************************************************************** */
 
 /* Maximum degree of various polynomials. */
-#define MAXDEG (MAXNPAR*2)
+#define MAXDEG (MAXNPAR * 2)
+
 
 /*************************************/
+
 /* Encoder parity bytes */
 extern int pBytes[MAXDEG];
 
@@ -71,6 +77,7 @@ extern int synBytes[MAXDEG];
 
 /* print debugging info */
 extern int DEBUG;
+
 
 /* Reed Solomon encode/decode routines */
 void initialize_ecc(void);
@@ -84,9 +91,11 @@ void encode_data(unsigned char msg[], int nbytes, unsigned char dst[]);
 /* CRC-CCITT checksum generator */
 BIT16 crc_ccitt(unsigned char *msg, int len);
 
+
 /* galois arithmetic tables */
 extern int gexp[];
 extern int glog[];
+
 
 void init_galois_tables(void);
 
@@ -108,3 +117,6 @@ void mult_polys(int dst[], int p1[], int p2[]);
 void copy_poly(int dst[], int src[]);
 
 void zero_poly(int poly[]);
+
+
+#endif	/* !ECC_H_ */

@@ -1,4 +1,4 @@
-//	ARDOP Modem Decode Sound Samples
+// ARDOP Modem Decode Sound Samples
 
 #include "ARDOPC.h"
 
@@ -10,7 +10,7 @@ int FECRepeatsSent;
 
 UCHAR bytFrameType;
 BOOL blnSendIDFrame;
-extern BOOL NeedID;        // SENDID Command Flag
+extern BOOL NeedID;					// SENDID Command Flag
 extern int intRepeatCount;
 
 extern int intLastFrameIDToHost;
@@ -18,7 +18,7 @@ int bytFailedDataLength;
 extern int intLastFailedFrameID;
 int crcLastFECDataPassedToHost;
 
-UCHAR bytFailedData[1600];        // do we rally need that much ????
+UCHAR bytFailedData[1600];			// do we rally need that much ????
 
 extern int intNumCar;
 extern int intBaud;
@@ -39,53 +39,56 @@ char strCurrentFrameFilename[16];
 
 unsigned int dttLastFECIDSent;
 
-extern int intCalcLeader;        // the computed leader to use based on the reported Leader Length
+extern int intCalcLeader;			// the computed leader to use based on the reported Leader Length
 
 
-// Function to start sending FEC data 
 
+/**
+ * \brief Function to start sending FEC data
+ *
+ * \param	bytData		Pointer to the buffer containing the data to send
+ * \param	Len			The length of the data to send
+ * \param	strDataMode	(TODO)
+ * \param	intRepeats	(TODO)
+ * \param	blnSendID	(TODO)
+ *
+ * \return Indicates whether the operation was successful or not.
+ * \retval	true	The operation was OK
+ * \retval	false	The operation had a problem
+ */
 BOOL StartFEC(UCHAR *bytData, int Len, char *strDataMode, int intRepeats, BOOL blnSendID) {
-	// Return True if OK false if problem
-
 	BOOL blnModeOK = FALSE;
 	int i;
 
 	FECRepeats = intRepeats;
 
-	if (ProtocolState == FECSend)    // If already sending FEC data simply add to the OB queue
-	{
-		AddDataToDataToSend(bytData, Len);    // add new data to queue
-
-		WriteDebugLog(LOGDEBUG,
-					  "[ARDOPprotocol.StartFEC] %d bytes received while in FECSend state...append to data to send.",
-					  Len);
-		return TRUE;
-	} else
+	if (ProtocolState == FECSend) {				// If already sending FEC data simply add to the OB queue
+		AddDataToDataToSend(bytData, Len);		// add new data to queue
+		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.StartFEC] %d bytes received while in FECSend state...append to data to send.", Len);
+		return (TRUE);
+	} else {
 		dttLastFECIDSent = Now;
+	}
 
-	//	Check to see that there is data in the buffer.
-
-	if (Len == 0 && bytDataToSendLength == 0) {
+	// Check to see that there is data in the buffer.
+	if ((Len == 0) && (bytDataToSendLength == 0)) {
 		WriteDebugLog(LOGDEBUG, "[ARDOPprotocol.StartFEC] No data to send!");
-		return FALSE;
+		return (FALSE);
 	}
 
 	// Check intRepeates
-
-	if (intRepeats < 0 || intRepeats > 5) {
-		//    Logs.Exception("[ARDOPprotocol.StartFEC] Repeats out of range: " & intRepeats.ToString)
-		return FALSE;
+	if ((intRepeats < 0) || (intRepeats > 5)) {
+//		Logs.Exception("[ARDOPprotocol.StartFEC] Repeats out of range: " & intRepeats.ToString)
+		return (FALSE);
 	}
 
-	//	check call sign
-
+	// check call sign
 	if (!CheckValidCallsignSyntax(Callsign)) {
-		//       Logs.Exception("[ARDOPprotocol.StartFEC] Invalid call sign: " & MCB.Callsign)
-		return FALSE;
+//		Logs.Exception("[ARDOPprotocol.StartFEC] Invalid call sign: " & MCB.Callsign)
+		return (FALSE);
 	}
 
-	//	Check to see that strDataMode is correct
-
+	// Check to see that strDataMode is correct
 	for (i = 0; i < strAllDataModesLen; i++) {
 		if (strcmp(strDataMode, strAllDataModes[i]) == 0) {
 			strcpy(strFECMode, strDataMode);
@@ -95,63 +98,59 @@ BOOL StartFEC(UCHAR *bytData, int Len, char *strDataMode, int intRepeats, BOOL b
 	}
 
 	if (blnModeOK == FALSE) {
-		//Logs.Exception("[ARDOPprotocol.StartFEC] Illegal FEC mode: " & strDataMode)
-		return FALSE;
+//		Logs.Exception("[ARDOPprotocol.StartFEC] Illegal FEC mode: " & strDataMode)
+		return (FALSE);
 	}
 
-	//While objMain.SoundIsPlaying
-	//    Thread.Sleep(100)
-	//End While
+//	While objMain.SoundIsPlaying
+//		Thread.Sleep(100)
+//	End While
 
 	blnAbort = FALSE;
-
-	intFrameRepeatInterval = 400;    // should be a safe number for FEC...perhaps could be shortened down to 200 -300 ms
-
-	AddDataToDataToSend(bytData, Len);    // add new data to queue
-
-	SetARDOPProtocolState(FECSend);        // set to FECSend state
-
+	intFrameRepeatInterval = 400;		// should be a safe number for FEC...perhaps could be shortened down to 200 -300 ms
+	AddDataToDataToSend(bytData, Len);	// add new data to queue
+	SetARDOPProtocolState(FECSend);		// set to FECSend state
 	blnSendIDFrame = blnSendID;
 
 	if (blnSendID) {
 		NeedID = TRUE;
 	} else {
 		// Cant we just call GetNextFECFrame??
-
-//		GetNextFECFrame();		// Use timer to start so cmd response is immediate
-/*
+//		GetNextFECFrame();				// Use timer to start so cmd response is immediate
+/* ------------------------------------------------------------------------------------------------------------------ *
 			Dim bytFrameData(-1) As Byte
-            strFrameComponents = strFECMode.Split(".")
-            bytFrameType = objFrameInfo.FrameCode(strFECMode & ".E")
-            If bytFrameType = bytLastFECDataFrameSent Then ' Added 0.3.4.1 
-                bytFrameType = bytFrameType Xor &H1 ' insures a new start is on a different frame type. 
-            End If
-            objFrameInfo.FrameInfo(bytFrameType, blnOdd, intNumCar, strMod, intBaud, intDataLen, intRSLen, bytQualThres, strType)
-            GetDataFromQueue(bytFrameData, intDataLen * intNumCar)
-            ' If bytFrameData.Length < (intDataLen * intNumCar) Then ReDim Preserve bytFrameData((intDataLen * intNumCar) - 1)
-            'Logs.WriteDebug("[ARDOPprotocol.StartFEC]  Frame Data (string) = " & GetString(bytFrameData))
-            If strMod = "4FSK" Then
-                bytFrameData = objMain.objMod.EncodeFSKData(bytFrameType, bytFrameData, strCurrentFrameFilename)
-                intCurrentFrameSamples = objMain.objMod.Mod4FSKData(bytFrameType, bytFrameData)
-            ElseIf strMod = "16FSK" Then
-                bytFrameData = objMain.objMod.EncodeFSKData(bytFrameType, bytFrameData, strCurrentFrameFilename)
-                intCurrentFrameSamples = objMain.objMod.Mod16FSKData(bytFrameType, bytFrameData)
-            ElseIf strMod = "8FSK" Then
-                bytFrameData = objMain.objMod.EncodeFSKData(bytFrameType, bytFrameData, strCurrentFrameFilename)
-                intCurrentFrameSamples = objMain.objMod.Mod8FSKData(bytFrameType, bytFrameData)
-            Else
-                bytFrameData = objMain.objMod.EncodePSK(bytFrameType, bytFrameData, strCurrentFrameFilename)
-                intCurrentFrameSamples = objMain.objMod.ModPSK(bytFrameType, bytFrameData)
-            End If
-            bytLastFECDataFrameSent = bytFrameType
-            objMain.SendFrame(intCurrentFrameSamples, strCurrentFrameFilename)
-            intFECFramesSent = 1
-*/
+			strFrameComponents = strFECMode.Split(".")
+			bytFrameType = objFrameInfo.FrameCode(strFECMode & ".E")
+			If bytFrameType = bytLastFECDataFrameSent Then ' Added 0.3.4.1
+				bytFrameType = bytFrameType Xor &H1 ' insures a new start is on a different frame type.
+			End If
+			objFrameInfo.FrameInfo(bytFrameType, blnOdd, intNumCar, strMod, intBaud, intDataLen, intRSLen, bytQualThres, strType)
+			GetDataFromQueue(bytFrameData, intDataLen * intNumCar)
+			' If bytFrameData.Length < (intDataLen * intNumCar) Then ReDim Preserve bytFrameData((intDataLen * intNumCar) - 1)
+			'Logs.WriteDebug("[ARDOPprotocol.StartFEC]  Frame Data (string) = " & GetString(bytFrameData))
+			If strMod = "4FSK" Then
+				bytFrameData = objMain.objMod.EncodeFSKData(bytFrameType, bytFrameData, strCurrentFrameFilename)
+				intCurrentFrameSamples = objMain.objMod.Mod4FSKData(bytFrameType, bytFrameData)
+			ElseIf strMod = "16FSK" Then
+				bytFrameData = objMain.objMod.EncodeFSKData(bytFrameType, bytFrameData, strCurrentFrameFilename)
+				intCurrentFrameSamples = objMain.objMod.Mod16FSKData(bytFrameType, bytFrameData)
+			ElseIf strMod = "8FSK" Then
+				bytFrameData = objMain.objMod.EncodeFSKData(bytFrameType, bytFrameData, strCurrentFrameFilename)
+				intCurrentFrameSamples = objMain.objMod.Mod8FSKData(bytFrameType, bytFrameData)
+			Else
+				bytFrameData = objMain.objMod.EncodePSK(bytFrameType, bytFrameData, strCurrentFrameFilename)
+				intCurrentFrameSamples = objMain.objMod.ModPSK(bytFrameType, bytFrameData)
+			End If
+			bytLastFECDataFrameSent = bytFrameType
+			objMain.SendFrame(intCurrentFrameSamples, strCurrentFrameFilename)
+			intFECFramesSent = 1
+ * ------------------------------------------------------------------------------------------------------------------ */
 	}
-	return TRUE;
+
+	return (TRUE);
 }
 
-// Function to get the next FEC data frame 
+// Function to get the next FEC data frame
 
 BOOL GetNextFECFrame() {
 	int Len;
@@ -167,7 +166,7 @@ BOOL GetNextFECFrame() {
 		KeyPTT(FALSE);  // insurance for PTT off
 		SetARDOPProtocolState(DISC);
 		blnAbort = FALSE;
-		return FALSE;
+		return (FALSE);
 	}
 
 	if (intFECFramesSent == -1) {
@@ -175,7 +174,7 @@ BOOL GetNextFECFrame() {
 
 		SetARDOPProtocolState(DISC);
 		KeyPTT(FALSE); // insurance for PTT off
-		return FALSE;
+		return (FALSE);
 	}
 
 	if (bytDataToSendLength == 0 && FECRepeatsSent >= FECRepeats && ProtocolState == FECSend) {
@@ -185,24 +184,24 @@ BOOL GetNextFECFrame() {
 		blnEnbARQRpt = FALSE;
 		KeyPTT(FALSE); // insurance for PTT of
 
-		return FALSE;
+		return (FALSE);
 	}
 
 	if (ProtocolState == DISC && intPINGRepeats > 0) {
 		intRepeatCount++;
 		if (intRepeatCount <= intPINGRepeats && blnPINGrepeating) {
 			dttLastPINGSent = Now;
-			return TRUE;                // continue PING
+			return (TRUE);                // continue PING
 		}
 
 		intPINGRepeats = 0;
 		blnPINGrepeating = False;
-		return FALSE;
+		return (FALSE);
 	}
 
 
 	if (ProtocolState != FECSend)
-		return FALSE;
+		return (FALSE);
 
 	if (intFECFramesSent == 0) {
 		// Initialize the first FEC Data frame (even) from the queue and compute the Filtered samples and filename
@@ -251,23 +250,23 @@ sendit:
 				Mod4FSK600BdDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen,
 										intCalcLeader);  // Modulate Data frame
 			else
-				Mod4FSKDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+				Mod4FSKDataAndPlay(bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		} else if (strcmp(strMod, "16FSK") == 0) {
 			EncLen = EncodeFSKData(bytFrameType, bytDataToSend, Len, bytEncodedBytes);
 			RemoveDataFromQueue(Len);        // No ACKS in FEC
-			Mod16FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+			Mod16FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		} else if (strcmp(strMod, "8FSK") == 0) {
 			EncLen = EncodeFSKData(bytFrameType, bytDataToSend, Len,
 								   bytEncodedBytes);          //      intCurrentFrameSamples = Mod8FSKData(bytFrameType, bytData);
 			RemoveDataFromQueue(Len);        // No ACKS in FEC
-			Mod8FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+			Mod8FSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		} else        // This handles PSK and QAM
 		{
 			EncLen = EncodePSKData(bytFrameType, bytDataToSend, Len, bytEncodedBytes);
 			RemoveDataFromQueue(Len);        // No ACKS in FEC
-			ModPSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame 
+			ModPSKDataAndPlay(bytEncodedBytes[0], bytEncodedBytes, EncLen, intCalcLeader);  // Modulate Data frame
 		}
-		return TRUE;
+		return (TRUE);
 	}
 
 	// Not First
@@ -275,7 +274,7 @@ sendit:
 	if (FECRepeatsSent >= FECRepeats) {
 		// Send New Data
 
-		//	Need to add pause  
+		// Need to add pause
 
 		txSleep(400);
 
@@ -289,7 +288,7 @@ sendit:
 //			Mod4FSKDataAndPlay(&bytEncodedBytes[0], 16, 0);		// only returns when all sent
 			SendID(wantCWID);
 			dttLastFECIDSent = Now;
-			return TRUE;
+			return (TRUE);
 		}
 
 		FrameInfo(bytLastFECDataFrameSent, &blnOdd, &intNumCar, strMod, &intBaud, &intDataLen, &intRSLen,
@@ -305,45 +304,39 @@ sendit:
 	}
 
 	// just a repeat of the last frame so no changes to samples...just inc frames Sent
-
 	FECRepeatsSent++;
 	intFECFramesSent++;
 
-	return TRUE;
+	return (TRUE);
 }
 
 
 extern int frameLen;
 
-//	Subroutine to process Received FEC data
+// Subroutine to process Received FEC data
 
 void ProcessRcvdFECDataFrame(int intFrameType, UCHAR *bytData, BOOL blnFrameDecodedOK) {
 	// Determine if this frame should be passed to Host.
-
 	if (blnFrameDecodedOK) {
 		int CRC = GenCRC16(bytData, frameLen);
 
 		if (intFrameType == intLastFrameIDToHost && CRC == crcLastFECDataPassedToHost) {
-			if (CommandTrace)
-				WriteDebugLog(LOGINFO,
-							  "[ARDOPprotocol.ProcessRcvdFECDataFrame] Same Frame ID: %s and matching data, not passed to Host",
-							  Name(intFrameType));
+			if (CommandTrace) {
+				WriteDebugLog(LOGINFO, "[ARDOPprotocol.ProcessRcvdFECDataFrame] Same Frame ID: %s and matching data, not passed to Host", Name(intFrameType));
+			}
 			return;
 		}
 
 		if (bytFailedDataLength > 0 && intLastFailedFrameID != intFrameType) {
 			AddTagToDataAndSendToHost(bytFailedData, "ERR", bytFailedDataLength);
-			if (CommandTrace)
-				WriteDebugLog(LOGINFO,
-							  "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass failed frame ID %s to Host (%d bytes)",
-							  Name(intFrameType), bytFailedDataLength);
+			if (CommandTrace) {
+				WriteDebugLog(LOGINFO, "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass failed frame ID %s to Host (%d bytes)", Name(intFrameType), bytFailedDataLength);
+			}
 			bytFailedDataLength = 0;
 			intLastFailedFrameID = -1;
 		}
 
-
 		AddTagToDataAndSendToHost(bytData, "FEC", frameLen);
-
 		crcLastFECDataPassedToHost = GenCRC16(bytData, frameLen);
 		intLastFrameIDToHost = intFrameType;
 		if (intLastFailedFrameID == intFrameType) {
@@ -351,30 +344,24 @@ void ProcessRcvdFECDataFrame(int intFrameType, UCHAR *bytData, BOOL blnFrameDeco
 			intLastFailedFrameID = -1;
 		}
 
-		if (CommandTrace)
-			WriteDebugLog(LOGINFO,
-						  "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass good data frame  ID %s to Host (%d bytes)",
-						  Name(intFrameType), frameLen);
+		if (CommandTrace) {
+			WriteDebugLog(LOGINFO, "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass good data frame  ID %s to Host (%d bytes)", Name(intFrameType), frameLen);
+		}
 	} else {
 		// Bad Decode
-
-		if (bytFailedDataLength > 0 && intLastFailedFrameID != intFrameType) {
+		if ((bytFailedDataLength > 0) && (intLastFailedFrameID != intFrameType)) {
 			AddTagToDataAndSendToHost(bytFailedData, "ERR", bytFailedDataLength);
-			if (CommandTrace)
-				WriteDebugLog(LOGINFO,
-							  "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass failed frame ID %s to Host (%d bytes)",
-							  Name(intFrameType), bytFailedDataLength);
+			if (CommandTrace) {
+				WriteDebugLog(LOGINFO, "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass failed frame ID %s to Host (%d bytes)", Name(intFrameType), bytFailedDataLength);
+			}
 			bytFailedDataLength = 0;
 			intLastFrameIDToHost = intLastFailedFrameID;
-			if (CommandTrace)
-				WriteDebugLog(LOGINFO,
-							  "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass failed frame ID %s to Host (%d bytes)",
-							  Name(intFrameType), bytFailedDataLength);
+			if (CommandTrace) {
+				WriteDebugLog(LOGINFO, "[ARDOPprotocol.ProcessRcvdFECDataFrame] Pass failed frame ID %s to Host (%d bytes)", Name(intFrameType), bytFailedDataLength);
+			}
 		}
-		memcpy(bytFailedData, bytData, frameLen);    // ' capture the current data and frame type
+		memcpy(bytFailedData, bytData, frameLen);		// ' capture the current data and frame type
 		bytFailedDataLength = frameLen;
 		intLastFailedFrameID = intFrameType;
 	}
 }
-		
-

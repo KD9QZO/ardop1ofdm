@@ -114,24 +114,18 @@ extern int PacketMonLength;
 
 typedef struct _MESSAGE {
 //	BASIC LINK LEVEL MESSAGE BUFFER LAYOUT
-
-//	struct _LINKTABLE * Linkptr;
+//	struct _LINKTABLE *Linkptr;
 	int DataLen;
-
 	UCHAR *DEST;
 	UCHAR *ORIGIN;
 	UCHAR *DIGIS;
-
 	UCHAR CTL;
 	UCHAR PID;
-
 	UCHAR *L2DATA;
-
 } MESSAGE, *PMESSAGE;
 
 typedef struct _DATABUFFER {
 //	Data content of a packet to send or receive;
-
 	int DataLen;
 	UCHAR *Data;
 } DATABUFFER;
@@ -141,33 +135,25 @@ typedef struct _LINKTABLE {
 //;	LEVEL 2 LINK CONTROL TABLE
 //;
 	struct _LINKTABLE *Next;
-
 	UCHAR LINKCALL[7];    // CALLSIGN OF STATION
 	UCHAR OURCALL[7];        // CALLSIGN OF OUR END
 	UCHAR DIGIS[56];        // LEVEL 2 DIGIS IN PATH
-
 	UCHAR LINKTYPE;        // 1 = UP, 2= DOWN, 3 = INTERNODE
-
 	UCHAR LINKNR;
 	UCHAR LINKNS;            // LEV 2 SEQUENCE COUNTS
 	UCHAR LINKWS;            // WINDOW START
 	UCHAR LINKOWS;        // OLD (LAST ACKED) WINDOW START
 	UCHAR LINKWINDOW;        // LEVEL 2 WINDOW SIZE
 	int PACLEN;
-
 	UCHAR L2FLAGS;        // CONTROL BITS
-
 	UCHAR *TXBuffer;        // Bytes to send (Malloced)
 	int TXCount;            // Count of bytes to send
 	int TXBuffersize;        // Currently allocated size
-
 	UCHAR *RXBuffer;        // Bytes to send (Malloced)
 	int RXCount;            // COunt of nytes to send
 	int RXBuffersize;        // CUrrently allocated size
-
 	struct _DATABUFFER FRAMES[8];        // FRAMES WAITING ACK
 	struct _DATABUFFER RXFRAMES[8];        // Frames received out of sequence
-
 	UCHAR L2STATE;        // PROCESSING STATE
 	UCHAR UseSREJ;        // Set if running 2.2
 	unsigned short L2TIMER;        // FRAME RETRY TIMER
@@ -177,17 +163,11 @@ typedef struct _LINKTABLE {
 	unsigned short LAST_F_TIME;    // TIME LAST R(F) SENT
 	UCHAR SDREJF;            // FLAGS FOR FRMR
 	UCHAR SDRBYTE;        // SAVED CONTROL BYTE FOR FRMR
-
 	UCHAR SDTSLOT;        // POINTER TO NEXT TXSLOT TO USE
-
 	UCHAR L2RETRIES;        // RETRY COUNTER
-
 	UCHAR SESSACTIVE;        // SET WHEN WE ARE SURE SESSION IS UP
-
 	unsigned short KILLTIMER;        // TIME TO KILL IDLE LINK
-
 	VOID *L2FRAG_Q;        // DEFRAGMENTATION QUEUE
-
 	int HostChannel;        // DED Channel
 	int ReportFlags;        // Inicate need to report event to host
 
@@ -199,9 +179,7 @@ typedef struct _LINKTABLE {
 #define ReportQueue 32
 
 	// Stats for dynamic frame type, window and paclen
-
 	int pktMode;
-
 	int L2FRAMESFORUS;
 	int L2FRAMESSENT;
 	int L2TIMEOUTS;
@@ -215,7 +193,6 @@ typedef struct _LINKTABLE {
 	int L2REJCOUNT;            // REJ FRAMES RECEIVED
 	int L2OUTOFSEQ;            // FRAMES RECEIVED OUT OF SEQUENCE
 	int L2RESEQ;            // FRAMES RESEQUENCED
-
 } LINKTABLE;
 
 UCHAR MYCALL[7] = ""; //	 NODE CALLSIGN (BIT SHIFTED)
@@ -253,26 +230,27 @@ int initMode = 1;
 int SABMMode = 1;
 
 // Modes now
-
 //	"4PSK/200",
 //	"4FSK/500", "4PSK/500", "8PSK/500", "16QAM/500",
 //	"4FSK/1000", "4PSK/1000", "8PSK/1000", "16QAM/1000",
 //	"4FSK/2000", "4PSK/2000", "8PSK/2000", "16QAM/2000"
 
 int CtlMode[16] = {            // Control frames are sent in faster modes but not full speed as they are short
-		1,
-		1, 2, 2, 2,
-		5, 6, 6, 6,
-		9, 9, 9, 9};
+	1,
+	1, 2, 2, 2,
+	5, 6, 6, 6,
+	9, 9, 9, 9
+};
 
 int initMaxFrame = 7;    // Will be overriden depending on Mode
 int initPacLen = 0;
 
 const int defaultPacLen[16] = {
-		32,
-		32, 64, 64, 64,
-		64, 128, 128, 128,
-		128, 256, 256, 256};
+	32,
+	32, 64, 64, 64,
+	64, 128, 128, 128,
+	128, 256, 256, 256
+};
 
 // Paclen 256 is fine with 8 car 4PSK and just about ok with 4 car 4PSK.
 // Also just about ok with 2 car QAM (4 Secs packet time)
@@ -287,6 +265,8 @@ int QCOUNT = 0;
 int MINBUFFCOUNT = 0;
 
 BOOL PacketHost = 0;    // Set if TCP Packet connection is in Host Mode not KISS Mode
+
+
 
 VOID L2SENDCOMMAND();
 
@@ -391,15 +371,14 @@ VOID DisplaySessionStats(struct _LINKTABLE *LINK, int Exitcode);
 
 int REALTIMETICKS = 0;
 
-//	MSGFLAG contains CMD/RESPONSE BITS
 
-#define    CMDBIT    4        // CURRENT MESSAGE IS A COMMAND
-#define    RESP 2        // CURRENT MSG IS RESPONSE
+// MSGFLAG contains CMD/RESPONSE BITS
+#define CMDBIT	4		// CURRENT MESSAGE IS A COMMAND
+#define RESP	2		// CURRENT MSG IS RESPONSE
 
-//	FRMR REJECT FLAGS
-
-#define    SDINVC 1        // INVALID COMMAND
-#define    SDNRER 8        // INVALID N(R)
+// FRMR REJECT FLAGS
+#define SDINVC	1		// INVALID COMMAND
+#define SDNRER	8		// INVALID N(R)
 
 
 UCHAR NO_CTEXT = 0;
@@ -407,47 +386,51 @@ UCHAR NO_CTEXT = 0;
 UCHAR MSGFLAG = 0;
 extern UCHAR *ALIASPTR;
 
-UCHAR QSTCALL[7] = {'Q' + 'Q', 'S' + 'S', 'T' + 'T', 0x40, 0x40, 0x40, 0xe0};    // QST IN AX25
-UCHAR NODECALL[7] = {0x9C, 0x9E, 0x88, 0x8A, 0xA6, 0x40, 0xE0};        // 'NODES' IN AX25 FORMAT
+UCHAR QSTCALL[7] = {
+	'Q' + 'Q', 'S' + 'S', 'T' + 'T', 0x40, 0x40, 0x40, 0xe0
+};    // QST IN AX25
+
+UCHAR NODECALL[7] = {
+	0x9C, 0x9E, 0x88, 0x8A, 0xA6, 0x40, 0xE0
+};        // 'NODES' IN AX25 FORMAT
+
 
 
 VOID *GetBuff() {
 	MESSAGE *Buffer = malloc(sizeof(MESSAGE));
 
-	return Buffer;
+	return (Buffer);
 }
 
 
 unsigned int ReleaseBuffer(VOID *pBUFF) {
 	free(pBUFF);
-	return 0;
+	return (0);
 }
 
 
 int C_Q_ADD(VOID *PQ, VOID *PBUFF) {
 	unsigned int *Q;
-	unsigned int *BUFF = (unsigned int *) PBUFF;
+	unsigned int *BUFF = (unsigned int*)PBUFF;
 	unsigned int *next;
 	int n = 0;
 
-//	PQ may not be word aligned, so copy as bytes (for ARM5)
-
-	Q = (unsigned int *) PQ;
+	// PQ may not be word aligned, so copy as bytes (for ARM5)
+	Q = (unsigned int*)PQ;
 
 	BUFF[0] = 0;                            // Clear chain in new buffer
 
-	if (Q[0] == 0)                        // Empty
-	{
-		Q[0] = (unsigned int) BUFF;                // New one on front
+	if (Q[0] == 0) {                       // Empty
+		Q[0] = (unsigned int)BUFF;                // New one on front
 		return (0);
 	}
 
-	next = (unsigned int *) Q[0];
+	next = (unsigned int*)Q[0];
 
 	while (next[0] != 0) {
-		next = (unsigned int *) next[0];            // Chain to end of queue
+		next = (unsigned int*)next[0];            // Chain to end of queue
 	}
-	next[0] = (unsigned int) BUFF;                    // New one on end
+	next[0] = (unsigned int)BUFF;                    // New one on end
 
 	return (0);
 }
@@ -456,8 +439,8 @@ int C_Q_ADD(VOID *PQ, VOID *PBUFF) {
 BOOL ConvToAX25(char *callsign, unsigned char *ax25call) {
 	int i;
 
-	memset(ax25call, 0x40, 6);        // in case short
-	ax25call[6] = 0x60;                // default SSID
+	memset(ax25call, 0x40, 6);			// in case short
+	ax25call[6] = 0x60;					// default SSID
 
 	for (i = 0; i < 7; i++) {
 		if (callsign[i] == '-') {
@@ -467,7 +450,7 @@ BOOL ConvToAX25(char *callsign, unsigned char *ax25call) {
 			i = atoi(&callsign[i + 1]);
 
 			if (i < 16) {
-				ax25call[6] |= i << 1;
+				ax25call[6] |= (i << 1);
 				return (TRUE);
 			}
 			return (FALSE);
@@ -480,7 +463,7 @@ BOOL ConvToAX25(char *callsign, unsigned char *ax25call) {
 			return (TRUE);
 		}
 
-		ax25call[i] = callsign[i] << 1;
+		ax25call[i] = (callsign[i] << 1);
 	}
 
 	//
@@ -540,21 +523,22 @@ VOID ConvertCallstoAX25() {
 	int n;
 
 	ConvToAX25(Callsign, MYCALL);
-
-	for (n = 0; n < AuxCallsLength; n++)
+	for (n = 0; n < AuxCallsLength; n++) {
 		ConvToAX25(&AuxCalls[n][0], &AuxAX[n][0]);
+	}
 
 }
 
 
 BOOL CompareCalls(UCHAR *c1, UCHAR *c2) {
 	//	COMPARE AX25 CALLSIGNS IGNORING EXTRA BITS IN SSID
-
-	if (memcmp(c1, c2, 6))
+	if (memcmp(c1, c2, 6)) {
 		return FALSE;            // No Match
+	}
 
-	if ((c1[6] & 0x1e) == (c2[6] & 0x1e))
+	if ((c1[6] & 0x1e) == (c2[6] & 0x1e)) {
 		return TRUE;
+	}
 
 	return FALSE;
 }
@@ -562,7 +546,6 @@ BOOL CompareCalls(UCHAR *c1, UCHAR *c2) {
 
 BOOL CompareAliases(UCHAR *c1, UCHAR *c2) {
 	//	COMPARE first 6 chars of AX25 CALLSIGNS
-
 	if (memcmp(c1, c2, 6))
 		return FALSE;            // No Match
 
@@ -580,7 +563,6 @@ struct _LINKTABLE *NewLink() {
 	memset(LINK, 0, sizeof(struct _LINKTABLE));
 
 	// Allocate TX and RX Buffers
-
 	LINK->TXBuffer = malloc(512);    //	Initial TX size. May Realloc if more needed
 
 	if (LINK->TXBuffer == NULL) {
@@ -598,7 +580,6 @@ struct _LINKTABLE *NewLink() {
 
 	LINK->TXBuffersize = 512;    // Currently allocated size
 	LINK->RXBuffersize = 512;    // Currently allocated size
-
 	LINK->pktMode = initMode;            // Set by PAC commands
 
 	// Get Default PACLEN for Mode
@@ -606,28 +587,23 @@ struct _LINKTABLE *NewLink() {
 	// Paclen 256 is fine with 8 car 4PSK and just about ok with 4 car 4PSK.
 	// Also just about ok with 2 car QAM (4 Secs packet time)
 	// 2 Car 4PSK best limited to 128
-
-	if (initPacLen == 0)        // Use configured if set
+	if (initPacLen == 0) {       // Use configured if set
 		LINK->PACLEN = defaultPacLen[initMode];    // Starting Point
-	else
+	} else {
 		LINK->PACLEN = initPacLen;            // Starting Point
-
+	}
 
 	initMaxFrame = 7;
-
 	LINK->LINKWINDOW = initMaxFrame;        // Starting Point
-
 	LINK->UseSREJ = TRUE;
 
 	// Allocate Frame buffers
-
 	for (i = 0; i < 8; i++) {
 		LINK->FRAMES[i].Data = malloc(LINK->PACLEN);    // paclen
 	}
 
 	if (LINK->FRAMES[7].Data == NULL) {
 		// No Memory - release everything
-
 		for (i = 0; i < 8; i++) {
 			if (LINK->FRAMES[i].Data)
 				free(LINK->FRAMES[i].Data);
@@ -639,14 +615,14 @@ struct _LINKTABLE *NewLink() {
 	}
 
 	// Add to chain
-
-	if (LINKS == NULL)
+	if (LINKS == NULL) {
 		LINKS = LINK;
-	else {
+	} else {
 		LINK->Next = LINKS;
 		LINKS = LINK;
 	}
-	return LINK;
+
+	return (LINK);
 }
 
 
@@ -867,7 +843,7 @@ VOID L2FORUS(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL, UCHAR MSGFLAG)
 
 	NO_CTEXT = 0;
 
-	//	ONLY SABM or UI  ALLOWED IF NO SESSION 
+	//	ONLY SABM or UI  ALLOWED IF NO SESSION
 	//	Plus XID/TEST/SABME if V2.2 support enabled
 
 	if (CTLlessPF == 3)            // UI
@@ -899,7 +875,7 @@ VOID L2FORUS(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL, UCHAR MSGFLAG)
 
 	if (CTLlessPF == SREJ)        // Used to see if other end supports SREJ on 2.0
 	{
-		// We do, so send DM 
+		// We do, so send DM
 
 		L2SENDRESP(LINK, Buffer, DM);
 		return;
@@ -1121,12 +1097,12 @@ BadXID:
 
 
 VOID L2LINKACTIVE(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL, UCHAR MSGFLAG) {
-	//	MESSAGE ON AN ACTIVE LINK 
+	//	MESSAGE ON AN ACTIVE LINK
 
 	int CTLlessPF = CTL & ~PFBIT;
 
 
-	//	ONLY SABM or UI  ALLOWED IF NO SESSION 
+	//	ONLY SABM or UI  ALLOWED IF NO SESSION
 
 	if (CTLlessPF == 3)            // UI
 	{
@@ -1214,7 +1190,7 @@ VOID L2LINKACTIVE(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL, UCHAR MSG
 
 		//	FOR 1-3 IT IS REASONABLE TO FULLY RESET THE CIRCUIT, BUT IN 4
 		//	SUCH ACTION WILL LOSE THE INITIAL SIGNON MSG IF CONNECTING TO A
-		//	BBS. THE PROBLEM IS TELLING THE DIFFERENCE. I'M GOING TO SET A FLAG 
+		//	BBS. THE PROBLEM IS TELLING THE DIFFERENCE. I'M GOING TO SET A FLAG
 		//	WHEN FIRST INFO RECEIVED - IF SABM REPEATED BEFORE THIS, I'LL ASSUME
 		//	CONDITION 4, AND JUST RESEND THE UA
 
@@ -1317,7 +1293,7 @@ VOID SETUPNEWL2SESSION(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR MSGFLAG) 
 		}
 	}
 
-	//	THIS MAY BE RESETTING A LINK - BEWARE OF CONVERTING A CROSSLINK TO 
+	//	THIS MAY BE RESETTING A LINK - BEWARE OF CONVERTING A CROSSLINK TO
 	//	AN UPLINK AND CONFUSING EVERYTHING
 
 
@@ -1350,13 +1326,13 @@ VOID L2SENDDM(struct _LINKTABLE *LINK, MESSAGE *Buffer) {
 
 
 VOID L2SENDRESP(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL) {
-	//	QUEUE RESPONSE TO PORT CONTROL - MAY NOT HAVE A LINK ENTRY 
+	//	QUEUE RESPONSE TO PORT CONTROL - MAY NOT HAVE A LINK ENTRY
 
 	int timeSinceDecoded = Now - DecodeCompleteTime;
 
 	WriteDebugLog(LOGDEBUG, "Time since received = %d", timeSinceDecoded);
 
-	//	SET APPROPRIATE P/F BIT 
+	//	SET APPROPRIATE P/F BIT
 
 	Buffer->CTL = CTL | PFBIT;
 
@@ -1379,9 +1355,9 @@ VOID L2SENDRESP(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL) {
 VOID L2SENDINVALIDCTRL(struct _LINKTABLE *LINK, MESSAGE *Buffer, UCHAR CTL) {
 	// Send FRMR Invalid Control field
 
-	//	QUEUE RESPONSE TO PORT CONTROL - MAY NOT HAVE A LINK ENTRY 
+	//	QUEUE RESPONSE TO PORT CONTROL - MAY NOT HAVE A LINK ENTRY
 
-	//	SET APPROPRIATE P/F BIT 
+	//	SET APPROPRIATE P/F BIT
 
 	UCHAR *ptr;
 
@@ -1854,7 +1830,7 @@ CheckNSLoop:
 		// of sequence frame in RXFRAMES
 
 		// so if we have frame LINK->LINKNR we can process it
-		// and remove it from RXFRAMES. If we are then back 
+		// and remove it from RXFRAMES. If we are then back
 		// in sequence we just carry on.
 
 		if (LINK->RXFRAMES[LINK->LINKNR].DataLen) {
@@ -1873,7 +1849,7 @@ CheckNSLoop:
 		}
 
 		//	BAD FRAME, SEND SREJ nexr time polled
-		//	SAVE THE FRAME 
+		//	SAVE THE FRAME
 
 
 		LINK->L2OUTOFSEQ++;
@@ -1896,7 +1872,7 @@ CheckNSLoop:
 		goto CheckPF;
 	}
 
-	// IN SEQUENCE FRAME 
+	// IN SEQUENCE FRAME
 
 	// Remove any stored frame with this seq
 
@@ -1910,7 +1886,7 @@ CheckNSLoop:
 		// If using SREJ we only cancel REJ if we have no stored frames
 
 		if (LINK->UseSREJ) {
-			// see if any frames saved. 
+			// see if any frames saved.
 
 			int i;
 
@@ -1968,7 +1944,7 @@ VOID PROC_I_FRAME(struct _LINKTABLE *LINK, UCHAR *Data, int DataLen) {
 	{
 	case 0xcc:
 	case 0xcd:
-		
+
 		// IP Message
 
 		if (n < 8)			// If digis, move data back down buffer
@@ -2014,7 +1990,7 @@ VOID PROC_I_FRAME(struct _LINKTABLE *LINK, UCHAR *Data, int DataLen) {
 		memmove(&Msg->PID, Info, Length);
 
 		Buffer->LENGTH = Length + MSGHDDRLEN;
- 
+
 		C_Q_ADD(&LINK->RX_Q, Buffer);
 	}
 	*/
@@ -2364,7 +2340,7 @@ VOID L2TimerProc() {
 	struct _LINKTABLE *THISLINK;
 
 	while (LINK) {
-		//	CHECK FOR TIMER EXPIRY OR BUSY CLEARED  
+		//	CHECK FOR TIMER EXPIRY OR BUSY CLEARED
 
 		if (LINK->L2STATE == 0)        // Shouldnt happen
 		{
@@ -2656,9 +2632,7 @@ VOID L2TIMEOUT(struct _LINKTABLE *LINK) {
 
 VOID SDFRMR(struct _LINKTABLE *LINK) {
 	LINK->L2FRMRTX++;
-
 	LINK->L2STATE = 3;                // ENTER FRMR STATE
-
 	LINK->L2TIMER = LINK->L2TIME;    //SET TIMER
 
 	SENDFRMR(LINK);
@@ -2667,7 +2641,6 @@ VOID SDFRMR(struct _LINKTABLE *LINK) {
 
 VOID SENDFRMR(struct _LINKTABLE *LINK) {
 	//	RESEND FRMR
-
 	MESSAGE Buffer;
 	UCHAR Data[4];
 
@@ -2704,14 +2677,11 @@ VOID CLEAROUTLINK(struct _LINKTABLE *OLDLINK) {
 		return;                            // Keep Link until Report sent
 
 	// Remove from Chain
-
 	if (OLDLINK == LINK) {
 		// First in chain
-
 		LINKS = OLDLINK->Next;
 	} else {
 		// Not first, so find in chain
-
 		while (LINK && LINK->Next != OLDLINK) {
 			LINK = LINK->Next;
 		}
@@ -2725,21 +2695,24 @@ VOID CLEAROUTLINK(struct _LINKTABLE *OLDLINK) {
 	}
 
 	// Release malloc'ed structures
-
-	if (OLDLINK->TXBuffer)
+	if (OLDLINK->TXBuffer) {
 		free(OLDLINK->TXBuffer);
+	}
 
-	if (OLDLINK->RXBuffer)
+	if (OLDLINK->RXBuffer) {
 		free(OLDLINK->RXBuffer);
-
-	for (i = 0; i < 8; i++) {
-		if (OLDLINK->FRAMES[i].Data)
-			free(OLDLINK->FRAMES[i].Data);
 	}
 
 	for (i = 0; i < 8; i++) {
-		if (OLDLINK->RXFRAMES[i].DataLen)
+		if (OLDLINK->FRAMES[i].Data) {
+			free(OLDLINK->FRAMES[i].Data);
+		}
+	}
+
+	for (i = 0; i < 8; i++) {
+		if (OLDLINK->RXFRAMES[i].DataLen) {
 			free(OLDLINK->RXFRAMES[i].Data);
+		}
 	}
 
 	free(OLDLINK);
@@ -2748,7 +2721,6 @@ VOID CLEAROUTLINK(struct _LINKTABLE *OLDLINK) {
 
 VOID L2SENDXID(struct _LINKTABLE *LINK) {
 	//	Set up and send XID
-
 	UCHAR *ptr;
 	unsigned int xidval;
 	MESSAGE Buffer;
@@ -2756,15 +2728,14 @@ VOID L2SENDXID(struct _LINKTABLE *LINK) {
 
 	Buffer.L2DATA = Data;
 
-	SETUPL2MESSAGE(&Buffer, LINK, XID | PFBIT);
+	SETUPL2MESSAGE(&Buffer, LINK, (XID | PFBIT));
 
 	Buffer.DEST[6] |= 0x80;        // SET COMMAND
 	Buffer.ORIGIN[6] &= 0x7F;    // SET COMMAND
 
 	ptr = &Data[0];
 
-	// Set up default XID Mod 8 
-
+	// Set up default XID Mod 8
 	*ptr++ = 0x82;            // FI
 	*ptr++ = 0x80;            // GI
 	*ptr++ = 0x0;
@@ -2776,18 +2747,15 @@ VOID L2SENDXID(struct _LINKTABLE *LINK) {
 	*ptr++ = 0x21;            // ABM Half Duplex
 
 	// We offer REJ, SREJ and SREJ Multiframe
-
 	*ptr++ = 0x03;            // Optional Functions
 	*ptr++ = 0x03;            // Len
 
 	// Sync TX, SREJ Multiframe 16 bit FCS, Mod 8, TEST,
 	// Extended Addressing, REJ, SREJ
-
-	xidval = OPMustHave | OPSREJ | OPSREJMult | OPREJ | OPMod8;
-	*ptr++ = xidval >> 16;
-	*ptr++ = xidval >> 8;
+	xidval = (OPMustHave | OPSREJ | OPSREJMult | OPREJ | OPMod8);
+	*ptr++ = (xidval >> 16);
+	*ptr++ = (xidval >> 8);
 	*ptr++ = xidval;
-
 
 	*ptr++ = 0x06;            // RX Packet Len
 	*ptr++ = 0x02;            // Len
@@ -2802,33 +2770,28 @@ VOID L2SENDXID(struct _LINKTABLE *LINK) {
 
 	LINK->L2TIMER = LINK->L2TIME;    // (RE)SET TIMER
 	PUT_ON_PORT_Q(LINK, &Buffer);
-
 }
 
 
 VOID L2SENDCOMMAND(struct _LINKTABLE *LINK, int CMD) {
 	//	SEND COMMAND IN CMD
-
 	MESSAGE Buffer;
 
 	SETUPL2MESSAGE(&Buffer, LINK, CMD);
 
-	Buffer.DEST[6] |= 0x80;        // SET COMMAND
-	Buffer.ORIGIN[6] &= 0x7F;    // SET COMMAND
+	Buffer.DEST[6] |= 0x80;					// SET COMMAND
+	Buffer.ORIGIN[6] &= 0x7F;				// SET COMMAND
 
-	if (CMD & PFBIT)                // RESPONSE EXPECTED?
-	{
-		LINK->L2TIMER = LINK->L2TIME;    // (RE)SET TIMER
+	if (CMD & PFBIT) {						// RESPONSE EXPECTED?
+		LINK->L2TIMER = LINK->L2TIME;		// (RE)SET TIMER
 	}
 
 	PUT_ON_PORT_Q(LINK, &Buffer);
-
 }
 
 
 VOID L2SENDRESPONSE(struct _LINKTABLE *LINK, int CMD) {
 	//	SEND Response IN CMD
-
 	MESSAGE Buffer;
 	int timeSinceDecoded = Now - DecodeCompleteTime;
 
@@ -2838,8 +2801,9 @@ VOID L2SENDRESPONSE(struct _LINKTABLE *LINK, int CMD) {
 
 // ?? is this best done by extending header or waiting ??
 
-	if (timeSinceDecoded < 250)
+	if (timeSinceDecoded < 250) {
 		txSleep(250 - timeSinceDecoded);
+	}
 
 	SETUPL2MESSAGE(&Buffer, LINK, CMD);
 
@@ -2869,31 +2833,24 @@ VOID L3LINKCLOSED(struct _LINKTABLE *LINK, int Reason);
 
 VOID InformPartner(struct _LINKTABLE *LINK, int Reason) {
 	//	LINK IS DISCONNECTING - IF THERE IS A CROSSLINK, SEND DISC TO IT
-
 	LINK->ReportFlags |= DiscRpt;
 }
 
 
 unsigned int RR_OR_RNR(struct _LINKTABLE *LINK) {
-	LINK->L2FLAGS &= ~RNRSENT;
+	LINK->L2FLAGS &= ~(RNRSENT);
 
-	//	we shoudl send RNR if host session is blocked or we are running
-	//  out of buffer space
-
-	if (LINK->RXCount > 512)
+	// we shoudl send RNR if host session is blocked or we are running out of buffer space
+	if (LINK->RXCount > 512) {
 		goto SENDRNR;            // NOT ENOUGH
+	}
 
 	//	SEND REJ IF IN REJ STATE
-
 	if (LINK->L2STATE == 6) {
-
 		// We may have the needed frame in RXFRAMES
-
 CheckNSLoop2:
-
 		if (LINK->RXFRAMES[LINK->LINKNR].DataLen) {
 			// We have the first missing frame. Process it.
-
 			struct _DATABUFFER *OldBuffer = &LINK->RXFRAMES[LINK->LINKNR];
 			WriteDebugLog(LOGDEBUG, "L2 process saved Frame %d", LINK->LINKNR);
 			PROC_I_FRAME(LINK, OldBuffer->Data, OldBuffer->DataLen);
@@ -2901,14 +2858,11 @@ CheckNSLoop2:
 			OldBuffer->DataLen = 0;
 			free(OldBuffer->Data);
 
-
 			// NR has been updated.
-
 			// CLear REJ if we have no more saved
-
 			if (LINK->UseSREJ)            // Using SREJ?
 			{
-				// see if any frames saved. 
+				// see if any frames saved.
 
 				int i;
 
@@ -3164,7 +3118,7 @@ BOOL ProcessPktCommand(int Channel, char *Buffer, int Len) {
 
 
 UCHAR *PacketSessionPoll(UCHAR *NextChan) {
-	// Look for anything to send 
+	// Look for anything to send
 
 	struct _LINKTABLE *LINK = LINKS;
 
@@ -3183,7 +3137,7 @@ BOOL CheckForPktMon() {
 	UCHAR SCSReply[256 + 10];        // Host Mode reply buffer
 
 	if (PacketMonLength) {
-		// If length is less than 257, return whole 
+		// If length is less than 257, return whole
 		// lot in a Type 4 message
 
 		// if not, first 256 as a type 5 Message
@@ -3477,23 +3431,23 @@ VOID ProcessDEDModeFrame(UCHAR *rxbuffer, unsigned int Length) {
  d = Number of transmitted frames not yet acknowledged
  e = Number of tries on current operation
  f = Link state
-     Possible link states are:
-      0 = Disconnected
-      1 = Link Setup
-      2 = Frame Reject
-      3 = Disconnect Request
-      4 = Information Transfer
-      5 = Reject Frame Sent
-      6 = Waiting Acknowledgement
-      7 = Device Busy
-      8 = Remote Device Busy
-      9 = Both Devices Busy
-     10 = Waiting Acknowledgement and Device Busy
-     11 = Waiting Acknowledgement and Remote Busy
-     12 = Waiting Acknowledgement and Both Devices Busy
-     13 = Reject Frame Sent and Device Busy
-     14 = Reject Frame Sent and Remote Busy
-     15 = Reject Frame Sent and Both Devices Busy
+	 Possible link states are:
+	  0 = Disconnected
+	  1 = Link Setup
+	  2 = Frame Reject
+	  3 = Disconnect Request
+	  4 = Information Transfer
+	  5 = Reject Frame Sent
+	  6 = Waiting Acknowledgement
+	  7 = Device Busy
+	  8 = Remote Device Busy
+	  9 = Both Devices Busy
+	 10 = Waiting Acknowledgement and Device Busy
+	 11 = Waiting Acknowledgement and Remote Busy
+	 12 = Waiting Acknowledgement and Both Devices Busy
+	 13 = Reject Frame Sent and Device Busy
+	 14 = Reject Frame Sent and Remote Busy
+	 15 = Reject Frame Sent and Both Devices Busy
 */
 
 		case 'D':

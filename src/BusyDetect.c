@@ -13,7 +13,8 @@
 VOID SortSignals2(float *dblMag, int intStartBin, int intStopBin, int intNumBins, float *dblAVGSignalPerBin, float *dblAVGBaselinePerBin);
 
 
-int intLastStart, intLastStop;
+int intLastStart;
+int intLastStop;
 
 int LastBusyOn;
 int LastBusyOff;
@@ -32,32 +33,31 @@ int dttLastBusyTrip = 0;
 int dttPriorLastBusyTrip = 0;
 int dttLastBusyClear = 0;
 int dttLastTrip;
-float dblAvgPk2BaselineRatio, dblAvgBaselineSlow, dblAvgBaselineFast;
+float dblAvgPk2BaselineRatio;
+float dblAvgBaselineSlow;
+float dblAvgBaselineFast;
 int intHoldMs = 5000;
 
 
 VOID ClearBusy() {
 	dttLastBusyTrip = Now;
 	dttPriorLastBusyTrip = dttLastBusyTrip;
-	dttLastBusyClear = dttLastBusyTrip + 610;    // This insures test in ARDOPprotocol ~ line 887 will work
-	dttLastTrip = dttLastBusyTrip - intHoldMs;    // This clears the busy detect immediatly (required for scanning when re enabled by Listen=True
+	dttLastBusyClear = dttLastBusyTrip + 610;	// This insures test in ARDOPprotocol ~ line 887 will work
+	dttLastTrip = dttLastBusyTrip - intHoldMs;	// This clears the busy detect immediatly (required for scanning when re enabled by Listen=True
 	blnLastBusy = False;
 	intBusyOnCnt = 0;
 	intBusyOffCnt = 0;
 	intLastStart = 0;
-	intLastStop = 0;        // This will force the busy detector to ignore old averages and initialze the rolling average filters
+	intLastStop = 0;							// This will force the busy detector to ignore old averages and initialze the rolling average filters
 }
 
 
-/*
+#if 0
 // Function to implement a busy detector based on 1024 point FFT
-
-BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only called while searching for leader ...once leader detected, no longer called.
-{
+BOOL BusyDetect2(float * dblMag, int intStart, int intStop) {       // this only called while searching for leader ...once leader detected, no longer called.
 	// each bin is about 12000/1024 or 11.72 Hz
 	// this only called while searching for leader ...once leader detected, no longer called.
 	// First sort signals and look at highes signals:baseline ratio..
-
 	float dblAVGSignalPerBinNarrow, dblAVGSignalPerBinWide, dblAVGBaselineNarrow, dblAVGBaselineWide;
 	float dblFastAlpha = 0.4f;
 	float dblSlowAlpha = 0.2f;
@@ -86,10 +86,10 @@ BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only 
 		intLastStart = intStart;
 		intLastStop = intStop;
 	}
-	
+
 	dblAvgStoNNarrow = max(dblAvgStoNSlowNarrow, dblAvgStoNFastNarrow); // computes fast attack, slow release
 
-	// Wide band (66% ofr current bandwidth) 
+	// Wide band (66% ofr current bandwidth)
 
 	SortSignals(dblMag, intStart, intStop, intWide, &dblAVGSignalPerBinWide, &dblAVGBaselineWide);
 
@@ -110,7 +110,7 @@ BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only 
 	dblAvgStoNWide = max(dblAvgStoNSlowWide, dblAvgStoNFastWide); // computes fast attack, slow release
 
 	// Preliminary calibration...future a function of bandwidth and BusyDet.
-   
+
 	switch (ARQBandwidth)
 	{
 	case B200MAX:
@@ -142,7 +142,7 @@ BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only 
 	{
 		intBusyOnCnt += 1;
 		intBusyOffCnt = 0;
-        if (intBusyOnCnt > 1)
+		if (intBusyOnCnt > 1)
 			blnBusy = True;
 		else if (!blnBusy)
 		{
@@ -154,9 +154,9 @@ BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only 
 	}
 	if (blnLastBusy == False && blnBusy)
 	{
-		int x = round(dblAvgStoNNarrow);	// odd, but PI doesnt print floats properly 
+		int x = round(dblAvgStoNNarrow);	// odd, but PI doesnt print floats properly
 		int y = round(dblAvgStoNWide);
-		
+
 		blnLastBusy = True;
 		LastBusyOn = Now;
 #ifdef __ARM_ARCH
@@ -167,7 +167,7 @@ BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only 
 	}
 	else if (blnLastBusy == True && !blnBusy)
 	{
-		int x = round(dblAvgStoNNarrow);	// odd, but PI doesnt print floats properly 
+		int x = round(dblAvgStoNNarrow);	// odd, but PI doesnt print floats properly
 		int y = round(dblAvgStoNWide);
 
 		blnLastBusy = False;
@@ -181,24 +181,23 @@ BOOL BusyDetect2(float * dblMag, int intStart, int intStop)        // this only 
 
 	return blnLastBusy;
 }
-
-
-*/
+#endif	/* #if 0 */
 
 
 
 
-BOOL BusyDetect3(float *dblMag, int intStart,
-				 int intStop)        // this only called while searching for leader ...once leader detected, no longer called.
-{
+BOOL BusyDetect3(float *dblMag, int intStart, int intStop) {		// this only called while searching for leader ...once leader detected, no longer called.
 	// each bin is about 12000/1024 or 11.72 Hz
 	// this only called while searching for leader ...once leader detected, no longer called.
 	// First sort signals and look at highes signals:baseline ratio..
-
-	float dblAVGSignalPerBinNarrow, dblAVGSignalPerBinWide, dblAVGBaselineNarrow, dblAVGBaselineWide;
+	float dblAVGSignalPerBinNarrow;
+	float dblAVGSignalPerBinWide;
+	float dblAVGBaselineNarrow;
+	float dblAVGBaselineWide;
 	float dblSlowAlpha = 0.2f;
-	float dblAvgStoNNarrow = 0, dblAvgStoNWide = 0;
-	int intNarrow = 8;  // 8 x 11.72 Hz about 94 z
+	float dblAvgStoNNarrow = 0;
+	float dblAvgStoNWide = 0;
+	int intNarrow = 8;		// 8 x 11.72 Hz about 94 z
 	int intWide = ((intStop - intStart) * 2) / 3; //* 0.66);
 	int blnBusy = FALSE;
 
@@ -231,36 +230,33 @@ BOOL BusyDetect3(float *dblMag, int intStart,
 	switch (ARQBandwidth) {
 		case B200MAX:
 		case B200FORCED:
-			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) ||
-					  (dblAvgStoNWide > (5 + 0.02 * powf(BusyDet, 4)));
+			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) || (dblAvgStoNWide > (5 + 0.02 * powf(BusyDet, 4)));
 			break;
 
 		case B500MAX:
 		case B500FORCED:
-			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) ||
-					  (dblAvgStoNWide > (5 + 0.02 * powf(BusyDet, 4)));
+			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) || (dblAvgStoNWide > (5 + 0.02 * powf(BusyDet, 4)));
 			break;
 
 		case B1000MAX:
 		case B1000FORCED:
-			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) ||
-					  (dblAvgStoNWide > (5 + 0.016 * powf(BusyDet, 4)));
+			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) || (dblAvgStoNWide > (5 + 0.016 * powf(BusyDet, 4)));
 			break;
 
 		case B2000MAX:
 		case B2000FORCED:
-			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) ||
-					  (dblAvgStoNWide > (5 + 0.016 * powf(BusyDet, 4)));
+			blnBusy = (dblAvgStoNNarrow > (3 + 0.008 * powf(BusyDet, 4))) || (dblAvgStoNWide > (5 + 0.016 * powf(BusyDet, 4)));
+			break;
 	}
 
 	if (BusyDet == 0) {
 		blnBusy = FALSE;        // 0 Disables check ?? Is this the best place to do this?
 	}
 
-//	WriteDebugLog(LOGDEBUG, "Busy %d Wide %f Narrow %f", blnBusy, dblAvgStoNWide, dblAvgStoNNarrow); 
+//	WriteDebugLog(LOGDEBUG, "Busy %d Wide %f Narrow %f", blnBusy, dblAvgStoNWide, dblAvgStoNNarrow);
 
 	if (blnBusy) {
-		// This requires multiple adjacent busy conditions to skip over one nuisance Busy trips. 
+		// This requires multiple adjacent busy conditions to skip over one nuisance Busy trips.
 		// Busy must be present at least 3 consecutive times ( ~250 ms) to be reported
 		intBusyOnCnt += 1;
 		intBusyOffCnt = 0;
@@ -286,19 +282,18 @@ BOOL BusyDetect3(float *dblMag, int intStart,
 }
 
 
-VOID SortSignals(float *dblMag, int intStartBin, int intStopBin, int intNumBins, float *dblAVGSignalPerBin,
-				 float *dblAVGBaselinePerBin) {
+VOID SortSignals(float *dblMag, int intStartBin, int intStopBin, int intNumBins, float *dblAVGSignalPerBin, float *dblAVGBaselinePerBin) {
 	// puts the top intNumber of bins between intStartBin and intStopBin into dblAVGSignalPerBin, the rest into dblAvgBaselinePerBin
 	// for decent accuracy intNumBins should be < 75% of intStopBin-intStartBin)
-
-	float dblAVGSignal[200] = {0};//intNumBins
-	float dblAVGBaseline[200] = {0};//intStopBin - intStartBin - intNumBins
-
+	float dblAVGSignal[200] = { 0 };	// intNumBins
+	float dblAVGBaseline[200] = { 0 };	// intStopBin - intStartBin - intNumBins
 	float dblSigSum = 0;
 	float dblTotalSum = 0;
 	int intSigPtr = 0;
 	int intBasePtr = 0;
-	int i, j, k;
+	int i;
+	int j;
+	int k;
 
 	for (i = 0; i < intNumBins; i++) {
 		for (j = intStartBin; j <= intStopBin; j++) {
@@ -334,13 +329,11 @@ BOOL compare(const void *p1, const void *p2) {
 }
 
 
-VOID SortSignals2(float *dblMag, int intStartBin, int intStopBin, int intNumBins, float *dblAVGSignalPerBin,
-				  float *dblAVGBaselinePerBin) {
+VOID SortSignals2(float *dblMag, int intStartBin, int intStopBin, int intNumBins, float *dblAVGSignalPerBin, float *dblAVGBaselinePerBin) {
 	// puts the top intNumber of bins between intStartBin and intStopBin into dblAVGSignalPerBin, the rest into dblAvgBaselinePerBin
 	// for decent accuracy intNumBins should be < 75% of intStopBin-intStartBin)
 
-	// This version uses a native sort function which is much faster and reduces CPU loading significantly on wide bandwidths. 
-
+	// This version uses a native sort function which is much faster and reduces CPU loading significantly on wide bandwidths.
 	float dblSort[200];
 	float dblSum1 = 0, dblSum2 = 0;
 	int numtoSort = (intStopBin - intStartBin) + 1, i;
@@ -350,14 +343,14 @@ VOID SortSignals2(float *dblMag, int intStartBin, int intStopBin, int intNumBins
 	qsort((void *) dblSort, numtoSort, sizeof(float), compare);
 
 	for (i = numtoSort - 1; i >= 0; i--) {
-		if (i >= (numtoSort - intNumBins))
+		if (i >= (numtoSort - intNumBins)) {
 			dblSum1 += dblSort[i];
-		else
+		} else {
 			dblSum2 += dblSort[i];
+		}
 	}
 
 	*dblAVGSignalPerBin = dblSum1 / intNumBins;
 	*dblAVGBaselinePerBin = dblSum2 / (intStopBin - intStartBin - intNumBins - 1);
 }
 
- 

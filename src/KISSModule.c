@@ -1,26 +1,26 @@
 //
-// KISS Code for ARDOPC. 
+// KISS Code for ARDOPC.
 //
-//	Allows Packet modes and ARDOP to coexist in same program
-//	Mainly for Teensy Version.
+// Allows Packet modes and ARDOP to coexist in same program
+// Mainly for Teensy Version.
 //
-//	Teensy will probably only support KISS over i2c,
-//	but for testing Windows version uses a real com port
+// Teensy will probably only support KISS over i2c,
+// but for testing Windows version uses a real com port
+//
+// New idea is to support via SCS Host Channel 250, but will
+// probably leave serial/i2c support in
+//
+// Now supports KISS over SCS Channel 250 or a KISS over TCP Connection
+//
 
-//	New idea is to support via SCS Host Channel 250, but will
-//	probably leave serial/i2c support in
 
-//	Now supports KISS over SCS Channel 250 or a KISS over TCP Connection
-
-
-
-#ifdef WIN32
+#if defined(WIN32)
 #define _CRT_SECURE_NO_DEPRECATE
 #define _USE_32BIT_TIME_T
 
 #include <windows.h>
 #include <winioctl.h>
-#else	/* WIN32 */
+#else	/* defined(WIN32) */
 #define HANDLE int
 #define SOCKET int
 
@@ -29,16 +29,16 @@
 #if !defined(TEENSY)
 #include <sys/socket.h>
 #endif	/* !defined(TEENSY) */
-#endif	/* !WIN32 */
+#endif	/* !defined(WIN32) */
 
 #include "ARDOPC.h"
 
 
 
-#define FEND 0xC0
-#define FESC 0xDB
-#define TFEND 0xDC
-#define TFESC 0xDD
+#define FEND	0xC0
+#define FESC	0xDB
+#define TFEND	0xDC
+#define TFESC	0xDD
 
 
 
@@ -64,7 +64,7 @@ VOID ptkSessionBG();
 
 extern HANDLE hDevice;
 
-char KISSPORTNAME[80] = "";  // for now just support over Host Interface;
+char KISSPORTNAME[80] = "";		// for now just support over Host Interface;
 
 HANDLE hControl;
 
@@ -84,23 +84,23 @@ typedef struct _SERIAL_STATUS {
 #define KISSBUFFERMASK 4095
 
 
-//	KISS bytes from a serial, i2c or Host Mode link are placed in
-//	the cyclic TX buffer as received. As we can only transmit complete
-//	packets, we need some indicator of how many packets there are
-//	in the buffer. Or maybe just how many FENDS, especially if
-//	we remove any extra ones (just leave one at end of frame)
-UCHAR KISSRXBUFF[KISSBUFFERSIZE];        // Host to RF
+// KISS bytes from a serial, i2c or Host Mode link are placed in
+// the cyclic TX buffer as received. As we can only transmit complete
+// packets, we need some indicator of how many packets there are
+// in the buffer. Or maybe just how many FENDS, especially if
+// we remove any extra ones (just leave one at end of frame)
+UCHAR KISSRXBUFF[KISSBUFFERSIZE];	// Host to RF
 int KRXPutPtr = 0;
 int KRXGetPtr = 0;
 int FENDCount = 0;
 
 
-UCHAR KISSTXBUFF[KISSBUFFERSIZE];        // RF to Host
+UCHAR KISSTXBUFF[KISSBUFFERSIZE];	// RF to Host
 int KTXPutPtr = 0;
 int KTXGetPtr = 0;
 
 
-UCHAR KISSBUFFER[500]; // Long enough for stuffed KISS frame
+UCHAR KISSBUFFER[500];				// Long enough for stuffed KISS frame
 UCHAR *RXMPTR = &KISSBUFFER[0];
 int KISSLength = 0;
 
@@ -208,8 +208,9 @@ VOID ProcessKISSByte(UCHAR c) {
 	KISSRXBUFF[KRXPutPtr++] = c;
 	KRXPutPtr &= KISSBUFFERMASK;
 
-	if (KRXPutPtr == KRXGetPtr)            // should never happen, but nasty if it does
-		FENDCount = 0;        // Buffer is now empty
+	if (KRXPutPtr == KRXGetPtr) {	// should never happen, but nasty if it does
+		FENDCount = 0;				// Buffer is now empty
+	}
 }
 
 
@@ -392,7 +393,7 @@ void SendFrameToHost(unsigned char *data, unsigned dlen) {
 	KISSTXBUFF[KTXPutPtr++] = FEND;
 	KTXPutPtr &= KISSBUFFERMASK;
 
-	KISSTXBUFF[KTXPutPtr++] = 0;        // Data
+	KISSTXBUFF[KTXPutPtr++] = 0;		// Data
 	KTXPutPtr &= KISSBUFFERMASK;
 
 	for (; dlen > 0; dlen--, data++) {

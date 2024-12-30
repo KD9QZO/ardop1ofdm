@@ -1,8 +1,8 @@
 //
 //	OFDM Module for ARDOP
 //
-/*
 
+/*
 Thoughts on OFDM
 
 We have lots (?43) carriers, so requiring all to be good is unlikely to succeed
@@ -25,17 +25,17 @@ Must handle missed ack. ? base next ack on combination of repeats ?
 
 Should we wait to pass to host till next seq frame received or all received ok?
 
-Should we have multiple frame types for each mod mode, or add a frame type to carrier? 
+Should we have multiple frame types for each mod mode, or add a frame type to carrier?
 
 Ideally would like 2, 4, 8 PSK, 16, 32QAM. Too many if we stick with ARDOP2 frame structure, so need frame type
 
 Frame type has to be sent in fixed mode (not same as data) we need 2 or 3 bits. With 2FSK that is about 60 mS.
-Need to validate. If we use same type for all carriers (any good reason not to?) we can decode type byte on all 
+Need to validate. If we use same type for all carriers (any good reason not to?) we can decode type byte on all
 frames and compare. Very unlikely to choose wrong one, even if some are different. Could even try more than one (
-may be a problem with Teensy). 
+may be a problem with Teensy).
 
-Could use combination of redundancy and mode to give very wide speed (and hopefully resilience) ratio, but gear 
-shifting may be a nightmare. 
+Could use combination of redundancy and mode to give very wide speed (and hopefully resilience) ratio, but gear
+shifting may be a nightmare.
 
 Is reducing carriers and therefore increasing power per carrier better than massive redundacy with lots of carriers?
 
@@ -52,9 +52,7 @@ For a block of 4-5 secs we get
 For Comparison 16QAM.2500.100
 
 120 bytes/carrier, 1200 bytes per frame, approx 2225 BPS Net
-
-
-*/
+ */
 
 
 
@@ -77,23 +75,33 @@ For Comparison 16QAM.2500.100
 
 #pragma warning(disable : 4244)        // Code does lots of float to int
 
-int OFDMMode;                // OFDM can use various modulation modes and redundancy levels
-int LastSentOFDMMode;        // For retries
-int LastSentOFDMType;        // For retries
+int OFDMMode;				// OFDM can use various modulation modes and redundancy levels
+int LastSentOFDMMode;		// For retries
+int LastSentOFDMType;		// For retries
 
 extern UCHAR bytCurrentFrameType;
 
 int RXOFDMMode = 0;
 
-const char OFDMModes[8][6] = {"PSK2", "PSK4", "PSK8", "QAM16", "PSK16", "QAM32", "Undef", "Undef"};
+const char OFDMModes[8][6] = {
+	"PSK2",
+	"PSK4",
+	"PSK8",
+	"QAM16",
+	"PSK16",
+	"QAM32",
+	"Undef",
+	"Undef"
+};
 
-int OFDMFrameLen[8] = {19, 40, 57, 80, 80};        // Bytes per carrier for each submode
+int OFDMFrameLen[8] = { 19, 40, 57, 80, 80 };	// Bytes per carrier for each submode
 
-int OFDMCarriersReceived[8] = {0};
-int OFDMCarriersDecoded[8] = {0};
+int OFDMCarriersReceived[8] = { 0 };
+int OFDMCarriersDecoded[8] = { 0 };
 
-int OFDMCarriersNaked[8] = {0};
-int OFDMCarriersAcked[8] = {0};
+int OFDMCarriersNaked[8] = { 0 };
+int OFDMCarriersAcked[8] = { 0 };
+
 
 // Functions to encode data for all OFDM frame types
 
@@ -102,22 +110,21 @@ int OFDMCarriersAcked[8] = {0};
 // been acked. Note that the first block is always unacked - acked data at the front of buffer is removed.
 
 // Although we have an 8 bit sequence, I don't see the need for more than 128 outstanding blocks (carriers). If we miss
-// just the first block of a 43 frame transmission, next time we send block 1 and 44 - 86. If 1 is still the only one 
+// just the first block of a 43 frame transmission, next time we send block 1 and 44 - 86. If 1 is still the only one
 // unacked I will repeat it several times in the next transmission, which will be the repeats plus 87 - 127.
 
 // Unfortunately this means bytDataToSend must be at least 128 * max block size (80) = 10240, which is a lot on a Teensy.
 // Maybe can come upwith better design!
 
 
-UCHAR UnackedOFDMBlocks[128] = {0};            // This is bit list of outstanding blocks.
-UCHAR UnackedOFDMBlockLen[128] = {
-		0};        // Length of each block. do we need both (ie can we send a block of zero length ??)
+UCHAR UnackedOFDMBlocks[128] = { 0 };	// This is bit list of outstanding blocks.
+UCHAR UnackedOFDMBlockLen[128] = { 0 };	// Length of each block. do we need both (ie can we send a block of zero length ??)
 
 int NextOFDMBlock = 0;
 int UnAckedBlockPtr = 0;
 
 int CarriersSent;
-int BytesSent = 0;                            // Sent but not acked
+int BytesSent = 0;						// Sent but not acked
 
 int CarriersACKed;
 int CarriersNAKed;
@@ -125,7 +132,7 @@ int CarriersNAKed;
 int lastOFDMRXMode;
 int LastDemodType = 0;
 
-int OFDMLevel;        // % "compression"
+int OFDMLevel;							// % "compression"
 
 
 // This is used if we send a partial block. Will normally only happen
@@ -133,16 +140,16 @@ int OFDMLevel;        // % "compression"
 //
 // Also used if we want to change mode
 
-int DontSendNewData = 0;    // Dont send new till all acked
-int LimitNewData = 0;        // Repeat unacked several times till all acked
-int NeedShiftDown = 0;        // Shift down once all sent
-int Duplicate = 0;            // Send data twice
+int DontSendNewData = 0;				// Dont send new till all acked
+int LimitNewData = 0;					// Repeat unacked several times till all acked
+int NeedShiftDown = 0;					// Shift down once all sent
+int Duplicate = 0;						// Send data twice
 int firstNewCarrier = 0;
 
 UCHAR SentOFDMBlocks[MAXCAR];
-UCHAR SentOFDMBlockLen[MAXCAR];    // Must match actual carrier number
+UCHAR SentOFDMBlockLen[MAXCAR];			// Must match actual carrier number
 
-UCHAR OFDMBlocks[MAXCAR];        // Build the carrier set in here
+UCHAR OFDMBlocks[MAXCAR];				// Build the carrier set in here
 UCHAR OFDMBlockLen[MAXCAR];
 
 
@@ -150,8 +157,8 @@ UCHAR goodReceivedBlocks[128];
 UCHAR goodReceivedBlockLen[128];
 
 
-#define MAX_RAW_LENGTH_FSK 43    // 1 + 32 + 8 + 2
-#define MAX_RAW_LENGTH    163     // Len Byte + Data + RS  + CRC I think!
+#define MAX_RAW_LENGTH_FSK	(43)		// 1 + 32 + 8 + 2
+#define MAX_RAW_LENGTH		(163)		// Len Byte + Data + RS  + CRC I think!
 
 int BytesSenttoHost = 0;
 
@@ -166,7 +173,8 @@ extern char CarrierOk[MAXCAR];        // RS OK Flags per carrier
 
 extern double dblPhaseInc;  // in milliradians
 extern short intNforGoertzel[MAXCAR];
-extern short intPSKPhase_1[MAXCAR], intPSKPhase_0[MAXCAR];
+extern short intPSKPhase_1[MAXCAR];
+extern short intPSKPhase_0[MAXCAR];
 extern short intCP[MAXCAR];      // Cyclic prefix offset
 extern float dblFreqBin[MAXCAR];
 extern short intFilteredMixedSamples[];    // Get Frame Type need 2400 and we may add 1200
@@ -204,6 +212,7 @@ extern int intTimeouts;
 extern UCHAR goodReceivedBlocks[128];
 extern UCHAR goodReceivedBlockLen[128];
 
+
 void GoertzelRealImag(short intRealIn[], int intPtr, int N, float m, float *dblReal, float *dblImag);
 
 int ComputeAng1_Ang2(int intAng1, int intAng2);
@@ -236,7 +245,6 @@ void GenCRC16Normal(char *Data, int Length) {
 	unsigned int CRC = GenCRC16(Data, Length);
 
 	// Put the two CRC bytes after the stop index
-
 	Data[Length++] = (CRC >> 8);     // MS 8 bits of Register
 	Data[Length] = (CRC & 0xFF);     // LS 8 bits of Register
 }
@@ -262,17 +270,12 @@ void ProcessOFDMNak(int AckType) {
 	int AckedPercent;
 
 	// We only get a NAK for an OFDM frame if no data is saved, so safe to shift down
-
 	CarriersNAKed += CarriersSent;
-
 	OFDMCarriersNaked[OFDMMode] += CarriersSent;
-
 	AckedPercent = (CarriersACKed * 100) / (CarriersACKed + CarriersNAKed);
-
 	WriteDebugLog(LOGDEBUG, "OFDM NAK Bytes Still outstanding %d OFDM Acked Percent %d", BytesSent, AckedPercent);
 
 	// Shift down if too many naks or nothing acked
-
 	if (((AckedPercent < 60) && (CarriersNAKed >= 2 * CarriersSent)) || OFDMCarriersAcked[OFDMMode] == 0) {
 		if (OFDMMode > 0) {
 			intNAKctr = 0;
@@ -320,7 +323,6 @@ void ProcessOFDMNak(int AckType) {
 	}
 
 	// Let timeout resend
-
 	dttNextPlay = Now;        // Don't wait
 	intTimeouts--;            // Keep stats clean
 }
@@ -420,7 +422,7 @@ int ProcessOFDMAck(int AckType) {
 		// Actually, I don't think we need to wait for all acked. Both ends know (from
 		// the OFDMAck) what is acked, and the IRS has passed to host. It is still
 		// in the RX list, but will be removed when the next data frame is received.
-		// So, as long as IRS discards any unacked data if the frame type or OFDM type 
+		// So, as long as IRS discards any unacked data if the frame type or OFDM type
 		// changes it should be ok.
 
 
@@ -732,7 +734,7 @@ int EncodeOFDMData(UCHAR bytFrameType, UCHAR *bytDataToSend, int Length, unsigne
 	// Often the first carrier is the only one missed, and if we repeat it first it will always
 	// fail. So it would be good if logical block number 0 isn't always sent on carrier 0
 
-	// The carrier number must match the block number so we can ack it. 
+	// The carrier number must match the block number so we can ack it.
 
 
 
@@ -745,7 +747,7 @@ int EncodeOFDMData(UCHAR bytFrameType, UCHAR *bytDataToSend, int Length, unsigne
 
 		// If we have no new data to send we would repeat the last sent blocks from
 		// SentOFDMBlocks which is wrong if there is no new data. So in that case just
-		// send outstanding data. 
+		// send outstanding data.
 
 		if (DontSendNewData && BytesSent)            // Just send outstanding data repeatedly if necessary
 		{
@@ -758,7 +760,7 @@ int EncodeOFDMData(UCHAR bytFrameType, UCHAR *bytDataToSend, int Length, unsigne
 
 		else if (intCarDataCnt > intDataLen) // why not > ??
 		{
-			// Won't all fit 
+			// Won't all fit
 tryagain:
 			OFDMBlocks[i] = blkNum = GetNextOFDMBlockNumber(&blkLen);
 
@@ -795,7 +797,7 @@ tryagain:
 
 			memset(&bytToRS[0], 0, intDataLen);
 
-			bytToRS[0] = intCarDataCnt;  // Could be 0 if insuffient data for # of carriers 
+			bytToRS[0] = intCarDataCnt;  // Could be 0 if insuffient data for # of carriers
 
 			if (intCarDataCnt > 0) {
 				OFDMBlocks[i] = blkNum = GetNextOFDMBlockNumber(&blkLen);
@@ -803,7 +805,7 @@ tryagain:
 					if (firstNewCarrier == -1)
 						firstNewCarrier = i;
 
-					blkLen = intCarDataCnt;  // Could be 0 if insuffient data for # of carriers 
+					blkLen = intCarDataCnt;  // Could be 0 if insuffient data for # of carriers
 					bytDataToSendLengthPtr += intCarDataCnt;    // Don't reduce bytes to send if repeating
 					BytesSent += intCarDataCnt;
 					if (intCarDataCnt < intDataLen)
@@ -1008,7 +1010,7 @@ VOID InitDemodOFDM() {
 		if (modePhase[i][2] >= 1572 || modePhase[i][2] <= -1572)
 			OFDMType[i] |= 4;
 
-		floatCarFreq -= 55.555664f;  // Step through each carrier Highest to lowest which is equivalent to lowest to highest before RSB mixing. 
+		floatCarFreq -= 55.555664f;  // Step through each carrier Highest to lowest which is equivalent to lowest to highest before RSB mixing.
 	}
 
 	// Get RX Mode. May be corrupt on some carriers, so go with majority
@@ -1018,7 +1020,7 @@ VOID InitDemodOFDM() {
 	// Or maybe don't actually clear old data until we decode at least
 	// one frame. That way an incorrect frame type won't cause a problem
 	// (as frame won't decode). But what if type is correct and frame still
-	// won't decode ?? 
+	// won't decode ??
 
 	// So if almost all types aren't the same, and type is new, discard.
 
@@ -1034,38 +1036,30 @@ VOID InitDemodOFDM() {
 		}
 	}
 
-	if (MaxModeCount != intNumCar)
+	if (MaxModeCount != intNumCar) {
 		WriteDebugLog(LOGDEBUG, "Not all OFDM Types the same (%d)", intNumCar - MaxModeCount);
-
+	}
 
 	if (RXOFDMMode != lastOFDMRXMode) {
-		// has changed. Only accept if all ok 
-		// ?? is this a bit extreme ??. Try 1 error 
-
+		// has changed. Only accept if all ok
+		// ?? is this a bit extreme ??. Try 1 error
 		if (MaxModeCount < (intNumCar - 1)) {
 			// Not sure. Safer to assume wrong
 			// if it really has changed decode will fail
 			// and frame repeat
-
 			RXOFDMMode = lastOFDMRXMode;
-
-			WriteDebugLog(LOGDEBUG,
-						  "New OFDM Mode but more than 1 carrier different (%d) - assume corrupt and don't change",
-						  intNumCar - MaxModeCount);
+			WriteDebugLog(LOGDEBUG, "New OFDM Mode but more than 1 carrier different (%d) - assume corrupt and don't change", intNumCar - MaxModeCount);
 		}
 	}
-
 
 	GetOFDMFrameInfo(RXOFDMMode, &intDataLen, &intRSLen, &intPSKMode, &intSymbolsPerByte);
 
 	// if OFDM mode (or frame type) has changed clear any received but unprocessed data
 
-	// If we aren't going to decode because it is a repeat we don't need to 
+	// If we aren't going to decode because it is a repeat we don't need to
 	// check, as type can't have changed, and new type might be corrupt
-
 	if (!RepeatedFrame || (memcmp(CarrierOk, Bad, intNumCar) == 0)) {
 		// We are going to decode it, so check
-
 		if (RXOFDMMode != lastOFDMRXMode || (intFrameType & 0xFE) != (LastDemodType & 0xFE)) {
 			memset(goodReceivedBlocks, 0, sizeof(goodReceivedBlocks));
 			memset(goodReceivedBlockLen, 0, sizeof(goodReceivedBlockLen));
@@ -1100,10 +1094,8 @@ VOID Decode1CarOFDM(int Carrier) {
 	float dblAlpha = 0.1f; // this determins how quickly the rolling average dblTrackingThreshold responds.
 
 	// dblAlpha value of .1 seems to work well...needs to be tested on fading channel (e.g. Multipath)
-
 	int Threshold = intCarMagThreshold[Carrier];
 	int Len = intPhasesLen;
-
 	UCHAR *Decoded = bytFrameData[0];            // Always use first buffer
 
 	pskStart = 0;
@@ -1115,10 +1107,8 @@ VOID Decode1CarOFDM(int Carrier) {
 	// (should be full amplitude value)
 
 	// On WGN this appears to improve decoding threshold about 1 dB 9/3/2016
-
 	while (Len >= 0) {
 		// Phase Samples are in intPhases
-
 		intData = 0;
 
 		for (k = 0; k < 2; k++) {
@@ -1213,7 +1203,7 @@ BOOL DemodOFDM() {
 		for (i = 0; i < intNumCar; i++) {
 			Used = Demod1CarOFDMChar(Start, i, intSymbolsPerByte);        // demods 2 phase values - enough for one char
 			intPhasesLen -= intSymbolsPerByte;
-			floatCarFreq -= 55.555664f;  // Step through each carrier Highest to lowest which is equivalent to lowest to highest before RSB mixing. 
+			floatCarFreq -= 55.555664f;  // Step through each carrier Highest to lowest which is equivalent to lowest to highest before RSB mixing.
 		}
 
 		intPhasesLen += intSymbolsPerByte;
@@ -1274,12 +1264,12 @@ BOOL DemodOFDM() {
 					Decode1CarPSK(i, TRUE);
 
 				// with OFDM each carrier has a sequence number, as we can do selective repeats if a carrier is missed.
-				// so decode into a separate buffer, and copy good data into the correct place in the received data buffer. 
+				// so decode into a separate buffer, and copy good data into the correct place in the received data buffer.
 
 				decodeLen = CorrectRawDataWithRS(&bytFrameData[0][0], decodeBuff, intDataLen + 1, intRSLen,
 												 intFrameType, i);
 
-				// if decode fails try with a tuning offset correction 
+				// if decode fails try with a tuning offset correction
 
 				if (CarrierOk[i] == 0) {
 					CorrectPhaseForTuningOffset(&intPhases[i][0], intPhasesLen, intPSKMode);
@@ -1345,8 +1335,8 @@ BOOL DemodOFDM() {
 
 int Demod1CarOFDMChar(int Start, int Carrier, int intNumOfSymbols) {
 	// Converts intSample to an array of differential phase and magnitude values for the Specific Carrier Freq
-	// intPtr should be pointing to the approximate start of the first reference/training symbol (1 of 3) 
-	// intPhase() is an array of phase values (in milliradians range of 0 to 6283) for each symbol 
+	// intPtr should be pointing to the approximate start of the first reference/training symbol (1 of 3)
+	// intPhase() is an array of phase values (in milliradians range of 0 to 6283) for each symbol
 	// intMag() is an array of Magnitude values (not used in PSK decoding but for constellation plotting or QAM decoding)
 	// Objective is to use Minimum Phase Error Tracking to maintain optimum pointer position
 
@@ -1377,7 +1367,7 @@ int Demod1CarOFDMChar(int Start, int Carrier, int intNumOfSymbols) {
 
 
 		// Should we track each carrier ??
-/*		
+/*
 		if (Carrier == 0)
 		{
 			Corrections = Track1CarPSK(floatCarFreq, intPSKMode, FALSE, TRUE, dblPhase, FALSE);
@@ -1404,7 +1394,7 @@ int Demod1CarOFDMChar(int Start, int Carrier, int intNumOfSymbols) {
 
 
 VOID EncodeAndSendOFDMACK(UCHAR bytSessionID, int LeaderLength) {
-	// OFDMACK has one bit per carrier. As this needs 43 bits meassage is 6 bytes. The spare 5 bits are 
+	// OFDMACK has one bit per carrier. As this needs 43 bits meassage is 6 bytes. The spare 5 bits are
 	// used to send quality
 
 	unsigned long long val = intLastRcvdFrameQuality >> 2;
@@ -1792,7 +1782,7 @@ BOOL CheckCRC16(unsigned char *Data, int Length) {
 	unsigned short CRC2 = compute_crc(Data, Length);
 	CRC2 ^= 0xffff;
 
-	// Compare the register with the last two bytes of Data (the CRC) 
+	// Compare the register with the last two bytes of Data (the CRC)
 
 	if ((CRC >> 8) == Data[Length])
 		if ((CRC & 0xFF) == Data[Length + 1])
