@@ -81,8 +81,28 @@ Mkfile.old
 dkms.conf
 
 
+## doxygen output ##
+
+doc/doxygen/docbook/
+doc/doxygen/html/
+doc/doxygen/latex/
+doc/doxygen/rtf/
+doc/doxygen/xml/
+doc/doxygen/doxyTags.xml
+doc/doxygen/doxygen.log
+
+
 ## JetBrains IDE ##
 
 .idea/
 cmake-*/
 
+
+## QT Creator IDE ##
+
+CMakeLists.txt.user
+
+
+## Misc Files ##
+
+deploy_doxygen.fish
